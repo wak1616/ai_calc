@@ -225,7 +225,7 @@
                 
                 <!-- Print button appears only after calculation -->
                 <v-btn
-                  color="success"
+                  color="primary"
                   size="large"
                   class="mt-4 no-print"
                   prepend-icon="mdi-printer"
