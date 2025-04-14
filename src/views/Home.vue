@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col>
-        <div class="text-h4 font-weight-medium mb-4">Artificial Intelligence Laser Arcuate Incision Calculator</div>
+        <div class="text-h4 font-weight-medium mb-4">XGBoost AI Calculator</div>
         
         <div class="text-h6 font-weight-regular mb-8 text-medium-emphasis pl-4">Please enter case details below, then submit:</div>
         
@@ -155,7 +155,7 @@
                 class="mt-4"
                 closable
               >
-                High astigmatism at this axis noted. Consider a toric IOL.
+                High astigmatism noted at this steep axis. Consider a toric IOL as an alernative to arcuate incisions.
               </v-alert>
             </v-fade-transition>
 
@@ -239,7 +239,7 @@ const rules = {
   },
   cornealAstigmatismRange: value => {
     const num = Number(value)
-    return (num > 0.20 && num <= 1.50) || 'Corneal Astigmatism must be between 0.20 and 1.50 D'
+    return (num >= 0.20 && num <= 1.50) || 'Corneal Astigmatism must be between 0.20 and 1.50 D'
   },
   steepAxisRange: value => {
     const num = Number(value)
@@ -285,6 +285,11 @@ const drawArcuates = () => {
     
     // Draw background image
     ctx.drawImage(img, 0, 0, myCanvas.value.width, myCanvas.value.height)
+
+    // Check if incisions are needed before drawing arcs
+    if (finalData.value.arcuate1text === "No arcuate incision needed") {
+      return; // Don't draw arcs if none are needed
+    }
 
     // Draw arcuates
     const radius = 250.3334

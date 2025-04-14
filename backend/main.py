@@ -20,7 +20,7 @@ app.add_middleware(
 )
 
 # Load the XGBoost model
-model_path = Path(__file__).parent / "model_full_ver7.json"
+model_path = Path(__file__).parent / "XGBoost_model_full.json"
 if not model_path.exists():
     raise FileNotFoundError(f"Model file not found at {model_path}")
 model = xgb.Booster()
@@ -31,7 +31,7 @@ class PatientData(BaseModel):
     DOS: str
     age: int = Field(ge=21, le=120, description="Age must be between 21 and 120 years")
     eye: Literal["OD", "OS"]
-    corneal_astigmatism: float = Field(gt=0.2, le=1.50, description="Corneal Astigmatism must be between 0.20 and 1.50 D")
+    corneal_astigmatism: float = Field(ge=0.2, le=1.50, description="Corneal Astigmatism must be between 0.20 and 1.50 D")
     steep_axis: float = Field(ge=0, le=180, description="Steep Axis must be between 0° and 180°")
     mean_k: float = Field(ge=30.00, le=50.00, description="Average K must be between 30.00 and 50.00 D")
     WTW: float = Field(ge=10.0, le=15.0, description="WTW must be between 10.0 and 15.0 mm")
@@ -61,43 +61,63 @@ def arcuatestartend(sweep: float, location: float) -> tuple[float, float]:
 async def predict(data: PatientData):
     try:
         # Calculate derived variables
-        type = "single" if (data.steep_axis > 140 or data.steep_axis < 40) else "paired"
-        steep_axis_term = np.cos(np.radians(data.steep_axis) * 2)
-        corneal_astigmatism = data.corneal_astigmatism / 2 if type == "paired" else data.corneal_astigmatism
-        
+        if data.corneal_astigmatism <= 0.2:
+            type = "none"
+        elif data.steep_axis > 140 or data.steep_axis < 40:
+            type = "single"
+        else:
+            type = "paired"
+            
+        steep_axis_term = np.cos(np.radians(data.steep_axis *2))
+
         # Create DataFrame and predict
         df = pd.DataFrame({
             'Age': [data.age],
             'Steep_axis_term': [steep_axis_term],
+            'Eye': pd.Categorical([data.eye]), 
             'WTW_IOLMaster': [data.WTW],
             'MeanK_IOLMaster': [data.mean_k],
-            'type': pd.Categorical([type]),
-            'treated_astig': [corneal_astigmatism],
-            'Residual_Astigmatism': [0]
+            'Type': pd.Categorical([type]), # Ensure 'none' is handled if necessary by the model or downstream processing
+            'Treated_astig': [data.corneal_astigmatism],
+            'Residual_astigmatism': [0],
         })
-        
-        dmatrix = xgb.DMatrix(data=df, enable_categorical=True)
-        prediction = np.max(np.round(model.predict(dmatrix)), 0)
 
-        # Calculate arcuate positions
-        if data.eye == "OD" and data.steep_axis > 140:
-            arc1axis = data.steep_axis + 180
-            arc2axis = data.steep_axis
-        elif data.eye == "OS" and data.steep_axis < 40:
-            arc1axis = data.steep_axis + 180
-            arc2axis = data.steep_axis
-        else: 
-            arc1axis = data.steep_axis
-            arc2axis = data.steep_axis + 180
+        # Prediction may not be meaningful if type is 'none', handle accordingly
+        if type != "none":
+            dmatrix = xgb.DMatrix(data=df, enable_categorical=True)
+            prediction = np.max(np.round(model.predict(dmatrix)), 0)
+        else:
+            prediction = 0 # Or handle as appropriate, e.g., skip prediction
 
-        # Generate output
-        if type == "single":
+        # Calculate arcuate positions - only if type is not 'none'
+        if type != "none":
+            if data.eye == "OD" and data.steep_axis > 140:
+                arc1axis = data.steep_axis + 180
+                arc2axis = data.steep_axis
+            elif data.eye == "OS" and data.steep_axis < 40:
+                arc1axis = data.steep_axis + 180
+                arc2axis = data.steep_axis
+            else:
+                arc1axis = data.steep_axis
+                arc2axis = data.steep_axis + 180
+        else:
+             arc1axis = 0 # Default values if no incision needed
+             arc2axis = 0
+
+
+        # Generate output based on type
+        if type == "none":
+            arc1start = arc1end = 0
+            arc2start = arc2end = 0
+            arcuate1text = "No arcuate incision needed"
+            arcuate2text = ""
+        elif type == "single":
             arc1start, arc1end = arcuatestartend(prediction, arc1axis)
             arc2start = arc2end = 0
-            arc1axis = 0 if arc1axis == 360 else arc1axis
+            arc1axis = 0 if arc1axis == 360 else arc1axis # Adjust axis if it wraps around
             arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis:.0f}°"
             arcuate2text = ""
-        else:
+        else: # type == "paired"
             arc1start, arc1end = arcuatestartend(prediction, arc1axis)
             arc2start, arc2end = arcuatestartend(prediction, arc2axis)
             arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis:.0f}°"

@@ -15,7 +15,7 @@
           prior published nomograms in the navigation bar "Other Resources" at the top of the webage.</div>
 
         <div class="text-body-1 mb-4">The current model (De Rojas AI Calc) has been developed using advanced machine learing algorithms
-          and has been trained and validated internally on 400+ cases. The model has been trained on the following assumptions:</div>
+          and has been trained and validated internally on over 500 cases. The model has been trained on the following assumptions:</div>
         
         <v-list class="mb-4 bg-transparent">
           <v-list-item v-for="(item, i) in assumptions" :key="i">
@@ -57,9 +57,9 @@ const assumptions = [
   'Arcuate incisions are made at 80% depth',
   'Arcuate incisions are made at 4.5mm radius from the visual center',
   'All arcuate incisions were opened at the time of surgery with a BSS irrigation cannula',
-  'Very low levels of astigmatism (<= 0.2) should not be treated with arcuates. High levels of astigmatism (>1.50) should not be treated with arcuates since, in such cases, toric lenses can offer a safer and more reliable alternative',
-  'Surgically induced astigmatism (SIA) from the surgeon\'s main temporal incision is factored in',
-  'The model was trained using corneal astigmatism measurements from the IOLMaster700 (Zeiss Meditech)'
+  'We do not recommend treating very low levels of astigmatism (<= 0.2) with laser arcuates where your SIA may have a larger effect than any arcuate. It is our opinion that high levels of astigmatism (>1.50) should also NOT be treated with arcuates since, in such cases, toric lenses can offer a safer and more reliable alternative',
+  'Surgically induced astigmatism (SIA) from the surgeon\'s main temporal incision is factored in (incisions were made at 180 degrees with a 2.75mm blade)',
+  'The first iteration of this model has been trained using measurements from the IOLMaster700 (Zeiss Meditech)'
 ]
 </script>
 

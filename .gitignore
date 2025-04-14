@@ -56,20 +56,17 @@ wheels/
 venv/
 ENV/
 
-# Jupyter Notebook
-.ipynb_checkpoints
 
 # Model files
 *.pkl
 *.h5
 *.model
-model_full_ver7.json  # Specific model file
-backend/model_full_ver7.json  # Specific model file with path
+XGBoost_model_full.json  # Specific model file
+backend/XGBoost_model_full.json  # Specific model file with path
 
 # Data files (if you don't want to include them)
 *.csv
 *.xlsx
-*.json
 
 # IDE specific files
 .idea/

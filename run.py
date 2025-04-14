@@ -10,7 +10,7 @@ def run_frontend():
 
 def run_backend():
     # Check if model exists in backend directory
-    model_file = "model_full_ver7.json"
+    model_file = "XGBoost_model_full.json"
     backend_dir = Path("backend")
     backend_model_path = backend_dir / model_file
     
