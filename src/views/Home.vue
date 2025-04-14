@@ -4,7 +4,7 @@
       <v-col>
         <div class="text-h4 font-weight-medium mb-4">XGBoost AI Calculator</div>
         
-        <div class="text-h6 font-weight-regular mb-8 text-medium-emphasis pl-4">Please enter case details below, then submit:</div>
+        <div class="text-h6 font-weight-regular mb-8 text-medium-emphasis pl-4 no-print">Please enter case details below, then submit:</div>
         
         <v-card class="mb-6 pa-4" elevation="2">
           <v-card-text>
@@ -12,6 +12,7 @@
               ref="form"
               @submit.prevent="handleSubmit"
               v-model="formValid"
+              class="no-print"
             >
               <div class="mb-4">
                 <v-text-field
@@ -152,7 +153,7 @@
                 v-if="showToricAlert"
                 type="warning"
                 variant="tonal"
-                class="mt-4"
+                class="mt-4 no-print"
                 closable
               >
                 High astigmatism noted at this steep axis. Consider a toric IOL as an alernative to arcuate incisions.
@@ -164,35 +165,75 @@
                 v-if="errorMessage"
                 type="error"
                 variant="tonal"
-                class="mt-4"
+                class="mt-4 no-print"
                 closable
                 @click:close="errorMessage = ''"
               >
                 {{ errorMessage }}
               </v-alert>
             </v-fade-transition>
+            
+            <!-- Print-only patient information -->
+            <div class="print-only mt-4">
+              <h2 class="text-h5 mb-4">Patient Information</h2>
+              <table class="patient-info-table">
+                <tr>
+                  <td><strong>Patient ID:</strong></td>
+                  <td>{{ formData.ID }}</td>
+                  <td><strong>Date of Surgery:</strong></td>
+                  <td>{{ formData.DOS }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Age:</strong></td>
+                  <td>{{ formData.age }} years</td>
+                  <td><strong>Eye:</strong></td>
+                  <td>{{ formData.eye === 'OD' ? 'Right' : 'Left' }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Corneal Astigmatism:</strong></td>
+                  <td>{{ formData.corneal_astigmatism }} D</td>
+                  <td><strong>Steep Axis:</strong></td>
+                  <td>{{ formData.steep_axis }}°</td>
+                </tr>
+                <tr>
+                  <td><strong>Average K:</strong></td>
+                  <td>{{ formData.mean_k }} D</td>
+                  <td><strong>WTW:</strong></td>
+                  <td>{{ formData.WTW }} mm</td>
+                </tr>
+              </table>
+            </div>
 
             <v-fade-transition>
-              <v-card
-                v-if="finalData"
-                class="mt-8 bg-grey-darken-3"
-                elevation="3"
-              >
-                <v-card-text>
-                  <div class="text-h6" :style="{ color: ARCUATE_COLORS.first }">{{ finalData.arcuate1text }}</div>
-                  <div v-if="finalData.arcuate2text" class="text-h6" :style="{ color: ARCUATE_COLORS.second }">{{ finalData.arcuate2text }}</div>
-                </v-card-text>
-              </v-card>
-            </v-fade-transition>
-
-            <v-fade-transition>
-              <v-card
-                v-if="finalData"
-                class="mt-8"
-                elevation="2"
-              >
-                <canvas ref="myCanvas" width="927.67" height="683.67"></canvas>
-              </v-card>
+              <div v-if="finalData" class="mt-8">
+                <v-card
+                  class="bg-grey-darken-3 mb-4 print-dark"
+                  elevation="3"
+                >
+                  <v-card-text>
+                    <div class="text-h6" :style="{ color: ARCUATE_COLORS.first }">{{ finalData.arcuate1text }}</div>
+                    <div v-if="finalData.arcuate2text" class="text-h6" :style="{ color: ARCUATE_COLORS.second }">{{ finalData.arcuate2text }}</div>
+                  </v-card-text>
+                </v-card>
+                
+                <v-card
+                  class="mb-4"
+                  elevation="2"
+                >
+                  <canvas ref="myCanvas" width="927.67" height="683.67"></canvas>
+                </v-card>
+                
+                <!-- Print button appears only after calculation -->
+                <v-btn
+                  color="success"
+                  size="large"
+                  class="mt-4 no-print"
+                  prepend-icon="mdi-printer"
+                  @click="printResults"
+                >
+                  Print Results
+                </v-btn>
+              </div>
             </v-fade-transition>
           </v-card-text>
         </v-card>
@@ -313,6 +354,10 @@ const drawArcuates = () => {
   }
 }
 
+const printResults = () => {
+  window.print()
+}
+
 const handleSubmit = async () => {
   const { valid } = await form.value.validate()
   
@@ -386,4 +431,77 @@ canvas {
   margin: 0 auto;
 }
 
+/* Print-specific styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  .v-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .v-card {
+    box-shadow: none !important;
+    border: 1px solid #eee;
+    margin-bottom: 15px !important;
+    padding: 0 !important;
+  }
+  
+  .print-dark {
+    background-color: #333 !important;
+    color: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  canvas {
+    max-width: 75% !important; /* Make the image 75% of original width */
+    height: auto !important;
+    max-height: 375px !important; /* Proportionally adjusted max height */
+    width: auto !important;
+    margin: 0 auto;
+    page-break-inside: avoid;
+    display: block;
+  }
+  
+  /* Other print optimizations */
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: white;
+  }
+  
+  .text-h4 {
+    font-size: 24px !important;
+    margin-bottom: 10px !important;
+  }
+}
+
+/* Always hide initially */
+.print-only {
+  display: none;
+}
+
+/* Patient information table for print view */
+.patient-info-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.patient-info-table td {
+  padding: 5px 10px;
+}
+
+.patient-info-table tr:nth-child(even) {
+  background-color: #f5f5f5;
+}
 </style> 
