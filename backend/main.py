@@ -1,8 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
-import os
 import xgboost as xgb
 import pandas as pd
 import numpy as np
@@ -11,20 +9,29 @@ from typing import Literal
 from pathlib import Path
 import json
 
-#load environment variables
-load_dotenv()
-
 app = FastAPI(title="XGBoost AI Calculator", description="A simple API for the XGBoost AI Calculator")
 
-# Add CORS middleware
+# Generate a list of localhost origins for ports 8000-8010
+localhost_origins = [f"http://localhost:{port}" for port in range(8000, 8011)]
+# Also add development frontend server origins
+frontend_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+# Production origins
+prod_origins = [
+    "https://derojas.info", "http://derojas.info", 
+    "https://www.derojas.info", "http://www.derojas.info",
+    # Vercel deployment domains
+    "https://*.vercel.app"
+]
+
+# Add CORS middleware with all possible origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://derojas.info", "http://derojas.info", 
-                  "https://www.derojas.info", "http://www.derojas.info",
-                  "http://localhost:5173", "http://127.0.0.1:5173"],  
+    allow_origins=[*prod_origins, *frontend_origins, *localhost_origins],
+    allow_origin_regex=r"https?://(localhost:\d+|.*\.vercel\.app)",  # Updated regex to include vercel.app domains
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Load the XGBoost model
@@ -87,7 +94,7 @@ async def predict(data: PatientData):
             'MeanK_IOLMaster': [data.mean_k],
             'Type': pd.Categorical([type]), # Ensure 'none' is handled if necessary by the model or downstream processing
             'Treated_astig': [data.corneal_astigmatism],
-            'Residual_astigmatism': [0],
+            # 'Residual_astigmatism': [0],
         })
 
         # Prediction may not be meaningful if type is 'none', handle accordingly

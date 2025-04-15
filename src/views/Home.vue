@@ -2,9 +2,7 @@
   <v-container>
     <v-row>
       <v-col>
-        <div class="text-h4 font-weight-medium mb-4">XGBoost AI Calculator</div>
-        
-        <div class="text-h6 font-weight-regular mb-8 text-medium-emphasis pl-4 no-print">Please enter case details below, then submit:</div>
+        <div class="text-h6 font-weight-regular mb-4 text-medium-emphasis pl-4 no-print">Please enter case details below, then submit:</div>
         
         <v-card class="mb-6 pa-4" elevation="2">
           <v-card-text>
@@ -141,7 +139,8 @@
                   size="large"
                   elevation="2"
                   class="px-8"
-                  :disabled="!formValid"
+                  :disabled="!formValid || isLoading"
+                  :loading="isLoading"
                 >
                   Submit
                 </v-btn>
@@ -177,30 +176,32 @@
             <div class="print-only mt-4">
               <h2 class="text-h5 mb-4">Patient Information</h2>
               <table class="patient-info-table">
-                <tr>
-                  <td><strong>Patient ID:</strong></td>
-                  <td>{{ formData.ID }}</td>
-                  <td><strong>Date of Surgery:</strong></td>
-                  <td>{{ formData.DOS }}</td>
-                </tr>
-                <tr>
-                  <td><strong>Age:</strong></td>
-                  <td>{{ formData.age }} years</td>
-                  <td><strong>Eye:</strong></td>
-                  <td>{{ formData.eye === 'OD' ? 'Right' : 'Left' }}</td>
-                </tr>
-                <tr>
-                  <td><strong>Corneal Astigmatism:</strong></td>
-                  <td>{{ formData.corneal_astigmatism }} D</td>
-                  <td><strong>Steep Axis:</strong></td>
-                  <td>{{ formData.steep_axis }}°</td>
-                </tr>
-                <tr>
-                  <td><strong>Average K:</strong></td>
-                  <td>{{ formData.mean_k }} D</td>
-                  <td><strong>WTW:</strong></td>
-                  <td>{{ formData.WTW }} mm</td>
-                </tr>
+                <tbody>
+                  <tr>
+                    <td><strong>Patient ID:</strong></td>
+                    <td>{{ formData.ID }}</td>
+                    <td><strong>Date of Surgery:</strong></td>
+                    <td>{{ formData.DOS }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Age:</strong></td>
+                    <td>{{ formData.age }} years</td>
+                    <td><strong>Eye:</strong></td>
+                    <td>{{ formData.eye === 'OD' ? 'Right' : 'Left' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Corneal Astigmatism:</strong></td>
+                    <td>{{ formData.corneal_astigmatism }} D</td>
+                    <td><strong>Steep Axis:</strong></td>
+                    <td>{{ formData.steep_axis }}°</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Average K:</strong></td>
+                    <td>{{ formData.mean_k }} D</td>
+                    <td><strong>WTW:</strong></td>
+                    <td>{{ formData.WTW }} mm</td>
+                  </tr>
+                </tbody>
               </table>
             </div>
 
@@ -219,8 +220,14 @@
                 <v-card
                   class="mb-4"
                   elevation="2"
+                  rounded="lg"
                 >
                   <canvas ref="myCanvas" width="1024" height="1024"></canvas>
+                  <div class="text-center pa-2 eye-label">
+                    <span class="text-h4 font-weight-bold">
+                      {{ formData.eye === 'OD' ? 'RIGHT EYE' : 'LEFT EYE' }}
+                    </span>
+                  </div>
                 </v-card>
                 
                 <!-- Print button appears only after calculation -->
@@ -255,6 +262,7 @@ import rightEyeTemplate from '@/assets/righteyetemplate.jpg'
 const form = ref(null)
 const formValid = ref(false)
 const errorMessage = ref('')
+const isLoading = ref(false)
 
 const formData = reactive({
   ID: '',
@@ -275,7 +283,21 @@ const ARCUATE_COLORS = {
   second: '#FFA500'  // Orange
 }
 
-const API_URL = 'http://localhost:8000'
+// Use environment variable for API connection with fallback
+const API_URL = ref(import.meta.env.VITE_API_URL || 'http://localhost:8000');
+
+// Function to check if API is available (for user feedback)
+const checkApiAvailability = async () => {
+  try {
+    const response = await fetch(`${API_URL.value}/docs`, { 
+      method: 'HEAD',
+      mode: 'no-cors' // Just to check if server responds
+    });
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
 
 const rules = {
   required: value => !!value || 'Required field',
@@ -371,38 +393,85 @@ const handleSubmit = async () => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/predict`, {
+    // Show loading state
+    isLoading.value = true;
+    errorMessage.value = '';
+    
+    // Check API availability
+    const apiAvailable = await checkApiAvailability();
+    if (!apiAvailable) {
+      throw new Error('API not available. Please try again later.');
+    }
+    
+    // Prepare data with correct types
+    const dataToSend = {
+      ID: formData.ID,
+      DOS: formData.DOS,
+      age: parseInt(formData.age),
+      eye: formData.eye,
+      corneal_astigmatism: parseFloat(formData.corneal_astigmatism),
+      steep_axis: parseFloat(formData.steep_axis),
+      mean_k: parseFloat(formData.mean_k),
+      WTW: parseFloat(formData.WTW)
+    };
+    
+    console.log(`Sending request to ${API_URL.value}/predict with data:`, dataToSend);
+    
+    const response = await fetch(`${API_URL.value}/predict`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
-      body: JSON.stringify(formData)
+      credentials: 'omit', // Don't send credentials for cross-origin requests
+      body: JSON.stringify(dataToSend)
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
+      let errorText = `HTTP error! Status: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        errorText = errorData.detail || errorText;
+      } catch (e) {
+        // If JSON parsing fails, use the status text
+        errorText = `Error ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorText);
     }
 
     const fetchedData = await response.json();
     finalData.value = fetchedData;
-    errorMessage.value = ''; // Clear any previous errors
     await nextTick();
     drawArcuates();
   } catch (error) {
     console.error('Error during prediction:', error);
     errorMessage.value = error.message || 'Error calculating arcuates. Please try again.';
     finalData.value = null; // Clear any previous results
+  } finally {
+    // Hide loading state when done (success or error)
+    isLoading.value = false;
   }
 }
 
-onMounted(() => {
-  // Pre-load both images
+// Try to find working API port on component mount
+onMounted(async () => {
+  // Preload images
   const rightImg = new Image()
   const leftImg = new Image()
+  
   rightImg.src = rightEyeTemplate
   leftImg.src = leftEyeTemplate
-})
+  
+  // Check API availability
+  try {
+    const apiAvailable = await checkApiAvailability();
+    if (apiAvailable) {
+      console.log(`Backend API available at ${API_URL.value}`);
+    }
+  } catch (error) {
+    console.error('Error checking API availability:', error);
+  }
+});
 </script>
 
 <style scoped>
@@ -434,6 +503,14 @@ canvas {
   background-color: white;
   display: block;
   margin: 0 auto;
+  border-radius: 16px;
+}
+
+/* Add styling for the eye label */
+.eye-label {
+  margin-top: 8px;
+  background-color: #f5f5f5;
+  border-top: 1px solid #e0e0e0;
 }
 
 /* Print-specific styles */
@@ -444,6 +521,12 @@ canvas {
   
   .print-only {
     display: block !important;
+  }
+  
+  /* Fixed page size to prevent unnecessary page breaks */
+  @page {
+    size: auto;
+    margin: 10mm;
   }
   
   .v-container {
@@ -458,6 +541,8 @@ canvas {
     border: 1px solid #eee;
     margin-bottom: 15px !important;
     padding: 0 !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
   }
   
   .print-dark {
@@ -468,13 +553,15 @@ canvas {
   }
   
   canvas {
-    max-width: 75% !important; /* Make the image 75% of original width */
+    max-width: 65% !important; /* Smaller to fit on one page */
     height: auto !important;
-    max-height: 375px !important; /* Proportionally adjusted max height */
+    max-height: 325px !important; /* Smaller max height */
     width: auto !important;
     margin: 0 auto;
     page-break-inside: avoid;
     display: block;
+    border-radius: 16px !important;
+    overflow: hidden !important;
   }
   
   /* Other print optimizations */
@@ -485,8 +572,37 @@ canvas {
   }
   
   .text-h4 {
-    font-size: 24px !important;
-    margin-bottom: 10px !important;
+    font-size: 22px !important; /* Slightly smaller title */
+    margin-bottom: 8px !important;
+  }
+  
+  .eye-label {
+    margin-top: 4px !important;
+    padding: 6px 0 !important; /* Smaller padding */
+    background-color: #f0f0f0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .eye-label span {
+    font-size: 22px !important; /* Slightly smaller */
+    font-weight: bold !important;
+    letter-spacing: 1px;
+  }
+  
+  /* Prevent page breaks */
+  .v-application__wrap,
+  .v-main,
+  .v-main__wrap {
+    height: auto !important;
+    overflow: visible !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
+  }
+  
+  /* Footer fix to prevent page breaks */
+  .mt-auto {
+    display: none !important;
   }
 }
 

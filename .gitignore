@@ -29,6 +29,9 @@ coverage
 
 *.tsbuildinfo
 
+# Environment files
+.env
+
 # Python
 __pycache__/
 *.py[cod]
@@ -61,8 +64,6 @@ ENV/
 *.pkl
 *.h5
 *.model
-XGBoost_model_full.json  # Specific model file
-backend/XGBoost_model_full.json  # Specific model file with path
 
 # Data files (if you don't want to include them)
 *.csv

@@ -71,3 +71,35 @@ To run the application, you need to:
 3. The application will automatically verify the model file's presence on startup
 
 > Note: The model file contains sensitive information and should not be shared publicly.
+
+## Deployment
+
+### Frontend Deployment on Vercel
+
+To deploy the frontend on Vercel:
+
+1. Push your code to a GitHub repository
+2. Go to [Vercel](https://vercel.com) and sign in with your GitHub account
+3. Import your repository
+4. Configure the deployment:
+   - Framework Preset: Vue.js
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+   - Install Command: `npm install`
+5. Set up environment variables:
+   - Add `VITE_API_URL` with the URL of your deployed backend API 
+   - (e.g., `https://your-api-domain.com`)
+
+#### Notes on Frontend/Backend Separation
+
+When deploying the frontend to Vercel, consider:
+1. Your backend must be deployed separately (e.g., on a cloud service like Render, Heroku, or a VPS)
+2. Update the `VITE_API_URL` environment variable in Vercel to point to that backend URL
+3. Ensure your backend has CORS configured to accept requests from your Vercel frontend domain
+
+### Backend Deployment
+
+For backend deployment guidance, consult the documentation for your preferred hosting platform:
+- [Render](https://render.com/docs)
+- [Heroku](https://devcenter.heroku.com/articles/getting-started-with-python)
+- [Digital Ocean](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-fastapi-app-with-gunicorn-on-ubuntu-20-04)

@@ -14,14 +14,16 @@
           incisions (i.e. how long do you make them? how far from the center of the cornea? How deep?) There are links to these 
           prior published nomograms in the navigation bar "Other Resources" at the top of the webage.</div>
 
-        <div class="text-body-1 mb-4">The current model (De Rojas AI Calc) has been developed using advanced machine learing algorithms
-          and has been trained and validated internally on over 500 cases. The model has been trained on the following assumptions:</div>
+        <div class="text-body-1 mb-4">The current model continues to be developed using advanced machine learing algorithms
+          and is still in BETA. The model has been trained on the following assumptions:</div>
         
-        <v-list class="mb-4 bg-transparent">
-          <v-list-item v-for="(item, i) in assumptions" :key="i">
-            <v-list-item-title class="text-body-1">{{ item }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
+        <div class="text-body-1 mb-4">
+          <ul class="pl-4">
+            <li v-for="(item, i) in assumptions" :key="i" class="mb-2">
+              {{ item }}
+            </li>
+          </ul>
+        </div>
 
         <div class="text-body-1 mb-4">The hope of the author is to create updated versions of this model that are customizable.  
           In other words, the underlying model will be retrained once a user submits a dataset with post-op outcomes.</div>
@@ -53,12 +55,12 @@
 
 <script setup>
 const assumptions = [
-  'The ALLY® Adaptive Cataract Treatment System (LensAR, Inc)is used to make laser arcuate incisions',
+  'The ALLY® Adaptive Cataract Treatment System (LensAR, Inc) is used to make laser arcuate incisions',
   'Arcuate incisions are made at 80% depth',
   'Arcuate incisions are made at 4.5mm radius from the visual center',
   'All arcuate incisions were opened at the time of surgery with a BSS irrigation cannula',
   'We do not recommend treating very low levels of astigmatism (<= 0.2) with laser arcuates where your SIA may have a larger effect than any arcuate. It is our opinion that high levels of astigmatism (>1.50) should also NOT be treated with arcuates since, in such cases, toric lenses can offer a safer and more reliable alternative',
-  'Surgically induced astigmatism (SIA) from the surgeon\'s main temporal incision is factored in (incisions were made at 180 degrees with a 2.75mm blade)',
+  'Surgically induced astigmatism (SIA) from the surgeon\'s main temporal incision is factored in (incisions were made at 180 degrees with a 2.75mm blade',
   'The first iteration of this model has been trained using measurements from the IOLMaster700 (Zeiss Meditech)'
 ]
 </script>
