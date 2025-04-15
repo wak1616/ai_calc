@@ -31,4 +31,11 @@ export default defineConfig({
       },
     },
   },
+    // Configure fs.allow to include node_modules for @mdi/font
+    server: {
+      fs: {
+        // Allow serving files from these directories
+        allow: ['..', 'node_modules'],
+      },
+    }
 })

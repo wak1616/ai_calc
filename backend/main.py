@@ -1,21 +1,29 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
+from dotenv import load_dotenv
+import os
 import xgboost as xgb
 import pandas as pd
 import numpy as np
 import math
 from typing import Literal          
 from pathlib import Path
+import json
 
-app = FastAPI()
+#load environment variables
+load_dotenv()
+
+app = FastAPI(title="XGBoost AI Calculator", description="A simple API for the XGBoost AI Calculator")
 
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite dev server
+    allow_origins=["https://derojas.info", "http://derojas.info", 
+                  "https://www.derojas.info", "http://www.derojas.info",
+                  "http://localhost:5173", "http://127.0.0.1:5173"],  
     allow_credentials=True,
-    allow_methods=["GET", "POST"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
 
@@ -134,3 +142,7 @@ async def predict(data: PatientData):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000) 

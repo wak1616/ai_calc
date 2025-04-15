@@ -220,7 +220,7 @@
                   class="mb-4"
                   elevation="2"
                 >
-                  <canvas ref="myCanvas" width="927.67" height="683.67"></canvas>
+                  <canvas ref="myCanvas" width="1024" height="1024"></canvas>
                 </v-card>
                 
                 <!-- Print button appears only after calculation -->
@@ -237,6 +237,11 @@
             </v-fade-transition>
           </v-card-text>
         </v-card>
+      </v-col>
+    </v-row>
+    <v-row justify="center" class="mt-auto pb-2 no-print">
+      <v-col cols="12" class="text-center text-caption text-medium-emphasis">
+        © {{ new Date().getFullYear() }} De Rojas AI Calc. All rights reserved.
       </v-col>
     </v-row>
   </v-container>
@@ -333,8 +338,8 @@ const drawArcuates = () => {
     }
 
     // Draw arcuates
-    const radius = 250.3334
-    const center = formData.eye === 'OS' ? { x: 484.666, y: 333.000 } : { x: 437.333, y: 341.333 }
+    const radius = 360// Adjusted for 1024x1024 images
+    const center = { x: 512, y: 512 } // Center of 1024x1024 image for both eyes
 
     // Draw first arcuate
     ctx.beginPath()
