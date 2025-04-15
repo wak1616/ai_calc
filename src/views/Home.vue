@@ -12,139 +12,153 @@
               v-model="formValid"
               class="no-print"
             >
-              <div class="mb-4">
-                <v-text-field
-                  v-model="formData.ID"
-                  label="Patient ID"
-                  variant="outlined"
-                  color="primary"
-                  class="input-field"
-                  :rules="[rules.required]"
-                ></v-text-field>
-              </div>
+              <!-- Row for ID and DOS -->
+              <v-row justify="center">
+                <v-col cols="12" sm="10" md="5">
+                  <v-text-field
+                    v-model="formData.ID"
+                    label="Patient ID"
+                    variant="outlined"
+                    color="primary"
+                    density="compact" 
+                    :rules="[rules.required]"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="10" md="5">
+                  <v-text-field
+                    v-model="formData.DOS"
+                    label="Date of Surgery"
+                    type="date"
+                    variant="outlined"
+                    color="primary"
+                    density="compact" 
+                    :rules="[rules.required]"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
 
-              <div class="mb-4">
-                <v-text-field
-                  v-model="formData.DOS"
-                  label="Date of Surgery"
-                  type="date"
-                  variant="outlined"
-                  color="primary"
-                  class="input-field"
-                  :rules="[rules.required]"
-                ></v-text-field>
-              </div>
+              <!-- Row for Age and Eye -->
+              <v-row justify="center">
+                <v-col cols="12" sm="10" md="5">
+                  <v-text-field
+                    v-model="formData.age"
+                    label="Age (years)"
+                    type="number"
+                    min="21" 
+                    max="120"
+                    step="1"
+                    variant="outlined"
+                    color="primary"
+                    density="compact" 
+                    :rules="[rules.required, rules.ageRange]"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="10" md="5">
+                  <!-- Adjusted margin-top (mt-n2) for better alignment with compact text field -->
+                  <v-radio-group
+                    v-model="formData.eye"
+                    label="Eye"
+                    inline
+                    color="primary"
+                    class="mt-n2" 
+                    :rules="[rules.required]"
+                  >
+                    <v-radio
+                      label="Right"
+                      value="OD"
+                      class="me-4" 
+                    ></v-radio>
+                    <v-radio
+                      label="Left"
+                      value="OS"
+                      class="me-4" 
+                    ></v-radio>
+                  </v-radio-group>
+                </v-col>
+              </v-row>
 
-              <div class="mb-4">
-                <v-text-field
-                  v-model="formData.age"
-                  label="Age (years)"
-                  type="number"
-                  min="30"
-                  max="120"
-                  step="1"
-                  variant="outlined"
-                  color="primary"
-                  class="input-field"
-                  :rules="[rules.required, rules.ageRange]"
-                ></v-text-field>
-              </div>
+              <!-- Row for Corneal Astigmatism and Steep Axis -->
+              <v-row justify="center">
+                 <v-col cols="12" sm="10" md="5">
+                  <v-text-field
+                    v-model="formData.corneal_astigmatism"
+                    label="Corneal Astigmatism (D)"
+                    type="number"
+                    min="0.20" 
+                    max="1.50"
+                    step="0.01"
+                    variant="outlined"
+                    color="primary" 
+                    density="compact" 
+                    :rules="[rules.required, rules.cornealAstigmatismRange]"
+                  ></v-text-field>
+                </v-col>
+                 <v-col cols="12" sm="10" md="5">
+                  <v-text-field
+                    v-model="formData.steep_axis"
+                    label="Steep Axis (°)"
+                    type="number"
+                    min="0"
+                    max="180"
+                    step="1"
+                    variant="outlined"
+                    color="primary" 
+                    density="compact" 
+                    :rules="[rules.required, rules.steepAxisRange]"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
 
-              <div class="mb-4">
-                <v-radio-group
-                  v-model="formData.eye"
-                  label="Eye"
-                  inline
-                  color="primary"
-                  class="mt-2"
-                  :rules="[rules.required]"
-                >
-                  <v-radio
-                    label="Right"
-                    value="OD"
-                    class="me-8"
-                  ></v-radio>
-                  <v-radio
-                    label="Left"
-                    value="OS"
-                    class="me-8"
-                  ></v-radio>
-                </v-radio-group>
-              </div>
+              <!-- Row for Mean K and WTW -->
+              <v-row justify="center">
+                <v-col cols="12" sm="10" md="5">
+                  <v-text-field
+                    v-model="formData.mean_k"
+                    label="Average K (D)"
+                    type="number"
+                    min="30.00"
+                    max="50.00"
+                    step="0.01"
+                    variant="outlined"
+                    color="primary" 
+                    density="compact" 
+                    :rules="[rules.required, rules.meanKRange]"
+                  ></v-text-field>
+                </v-col>
+                <v-col cols="12" sm="10" md="5">
+                  <v-text-field
+                    v-model="formData.WTW"
+                    label="WTW (mm)"
+                    type="number"
+                    min="10.0"
+                    max="15.0"
+                    step="0.1"
+                    variant="outlined"
+                    color="primary" 
+                    density="compact" 
+                    :rules="[rules.required, rules.wtwRange]"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
 
-              <div class="py-2">
-                <v-text-field
-                  v-model="formData.corneal_astigmatism"
-                  label="Corneal Astigmatism (D)"
-                  type="number"
-                  min="0.00"
-                  max="1.50"
-                  step="0.01"
-                  variant="outlined"
-                  base-color="primary"
-                  class="input-field"
-                  :rules="[rules.required, rules.cornealAstigmatismRange]"
-                ></v-text-field>
-              </div>
-
-              <div class="py-2">
-                <v-text-field
-                  v-model="formData.steep_axis"
-                  label="Steep Axis (°)"
-                  type="number"
-                  min="0"
-                  max="180"
-                  step="1"
-                  variant="outlined"
-                  base-color="primary"
-                  class="input-field"
-                  :rules="[rules.required, rules.steepAxisRange]"
-                ></v-text-field>
-              </div>
-
-              <div class="py-2">
-                <v-text-field
-                  v-model="formData.mean_k"
-                  label="Average K (D)"
-                  type="number"
-                  min="30.00"
-                  max="50.00"
-                  step="0.01"
-                  variant="outlined"
-                  base-color="primary"
-                  class="input-field"
-                  :rules="[rules.required, rules.meanKRange]"
-                ></v-text-field>
-              </div>
-
-              <div class="py-2">
-                <v-text-field
-                  v-model="formData.WTW"
-                  label="WTW (mm)"
-                  type="number"
-                  min="10.0"
-                  max="15.0"
-                  step="0.1"
-                  variant="outlined"
-                  base-color="primary"
-                  class="input-field"
-                  :rules="[rules.required, rules.wtwRange]"
-                ></v-text-field>
-              </div>
-
-              <div class="mt-8">
-                <v-btn 
-                  type="submit" 
-                  color="primary" 
-                  size="large"
-                  elevation="2"
-                  class="px-8"
-                  :disabled="!formValid || isLoading"
-                  :loading="isLoading"
-                >
-                  Submit
-                </v-btn>
-              </div>
+              <!-- Submit Button - Centered -->
+              <v-row justify="center">
+                <v-col cols="auto">
+                  <div class="mt-4">
+                    <v-btn 
+                      type="submit" 
+                      color="primary" 
+                      size="large"
+                      elevation="2"
+                      class="px-8"
+                      :disabled="!formValid || isLoading"
+                      :loading="isLoading"
+                    >
+                      Submit
+                    </v-btn>
+                  </div>
+                </v-col>
+              </v-row>
             </v-form>
 
             <v-fade-transition>
@@ -231,15 +245,19 @@
                 </v-card>
                 
                 <!-- Print button appears only after calculation -->
-                <v-btn
-                  color="primary"
-                  size="large"
-                  class="mt-4 no-print"
-                  prepend-icon="mdi-printer"
-                  @click="printResults"
-                >
-                  Print Results
-                </v-btn>
+                <v-row justify="center">
+                  <v-col cols="auto">
+                    <v-btn
+                      color="primary"
+                      size="large"
+                      class="mt-4 no-print"
+                      prepend-icon="mdi-printer"
+                      @click="printResults"
+                    >
+                      Print Results
+                    </v-btn>
+                  </v-col>
+                </v-row>
               </div>
             </v-fade-transition>
           </v-card-text>
@@ -475,19 +493,14 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.input-field {
-  --v-input-control-height: 56px;
-  --v-field-padding-bottom: 2px;
-  --v-field-padding-top: 2px;
-  --v-field-input-padding-top: 8px;
-}
+/* Custom styles for input-field and border-radius removed */
 
 .v-text-field :deep(.v-field__outline__start) {
-  border-radius: 4px 0 0 4px;
+  /* border-radius: 4px 0 0 4px; */ /* Removed */
 }
 
 .v-text-field :deep(.v-field__outline__end) {
-  border-radius: 0 4px 4px 0;
+  /* border-radius: 0 4px 4px 0; */ /* Removed */
 }
 
 .canvas-container {
