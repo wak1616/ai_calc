@@ -94,7 +94,7 @@ async def predict(data: PatientData):
             'MeanK_IOLMaster': [data.mean_k],
             'Type': pd.Categorical([type]), # Ensure 'none' is handled if necessary by the model or downstream processing
             'Treated_astig': [data.corneal_astigmatism],
-            # 'Residual_astigmatism': [0],
+            'Residual_astigmatism': [0],
         })
 
         # Prediction may not be meaningful if type is 'none', handle accordingly
