@@ -171,7 +171,7 @@
                 class="mt-4 no-print"
                 closable
               >
-                Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (>= 1.25 WTR or >= 0.75 ATR). Consider a toric IOL for a more reliable and potentially safer alternative.
+                Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (>= 1.25 WTR or >= 0.75 ATR). Consider a toric IOL for a stabler or more predictable alternative.
               </v-alert>
             </v-fade-transition>
 

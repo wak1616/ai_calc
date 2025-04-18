@@ -11,7 +11,7 @@
         <div class="text-body-1 mb-4">Multiple published models or "nomograms" exist to help guide surgeons on incision parameters (length, distance from center, depth). Links to some prior published nomograms are available in the "Other Resources" menu at the top of the webpage.</div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">The Model</div>
-        <div class="text-body-1 mb-4">The De Rojas AI Calc model has been developed using advanced machine learning algorithms and has been trained and validated internally on hundreds of cases (Outcome data obatined from: Joaquin De Rojas, Denise Visco, Priya Mathews, William Soscia). Please note that the model is currently in its BETA version.</div>
+        <div class="text-body-1 mb-4">The De Rojas AI Calc model has been developed using advanced machine learning algorithms and has been trained and validated on hundreds of cases. Case data were obtained from Drs. Joaquin De Rojas, Denise Visco, Priya Mathews, and William Soscia. Please note that the model is currently in its BETA version.</div>
         
         <div class="text-h5 font-weight-medium mb-3 mt-5">Model Assumptions</div>
         <div class="text-body-1 mb-4">The model has been trained based on the following assumptions:</div>
@@ -29,10 +29,8 @@
         <div class="text-h5 font-weight-medium mb-3 mt-5">Disclaimer</div>
         <v-alert
           type="warning"
-          class="mb-4 font-weight-bold"
+          class="mb-4 font-weight-bold disclaimer-alert"
           elevation="2"
-          border="start"
-          border-color="warning"
         >
           IN ITS CURRENT FORM, THIS WEBSITE/NOMOGRAM IS INTENDED FOR INVESTIGATIONAL PURPOSES ONLY. IT IS NOT APPROVED FOR PATIENT USE OR TO GUIDE SURGICAL CORRECTION OF ASTIGMATISM IN HUMANS OR ANIMALS.
         </v-alert>
@@ -62,11 +60,15 @@ const assumptions = [
   'All AKs were opened at the time of surgery with a BSS irrigation cannula.',
   'We do not recommend treating very low levels of astigmatism (<= 0.2 D) with AKs.',
   'Maximum AK sweep have been capped at 50 degrees. It is our opinion that higher levels of astigmatism should be treated with toric lenses over laser AKs.',
-  'The nomogram assumes a clear corneal temporal incision with a 2.4-2.8mm blade which can be assumed to create ~0.2 D of SIA at 180 deg. During training, the model has baked in an internal "average" SIA internally. Inputting a presumed SIA for an individual surgeons has not been shown to significantly improve results.',
+  'The nomogram assumes a clear corneal temporal incision with a 2.4-2.8mm blade which can be assumed to create ~0.2 D of SIA at 180 deg. An "average" SIA has been captured by the weights during the machine learning process. Inputting a presumed SIA for an individual surgeons has not been shown to significantly improve results.',
   'The current iteration of this model was been trained using K readings and other measurements from the IOLMaster 700 (Zeiss Meditec).'
 ]
 </script>
 
 <style scoped>
-
+.disclaimer-alert {
+  background-color: #ffebee !important; /* Light red */
+  color: #b71c1c !important;           /* Dark red text for contrast */
+  border-left: 6px solid #ffcdd2 !important; /* Light red border to match background */
+}
 </style>
