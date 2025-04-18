@@ -169,7 +169,7 @@
                 class="mt-4 no-print"
                 closable
               >
-                High astigmatism noted at this steep axis. Consider a toric IOL as an alernative to arcuate incisions.
+                High astigmatism noted at this steep axis. Consider a toric IOL as a more reliable alernative to arcuate incision(s).
               </v-alert>
             </v-fade-transition>
 
