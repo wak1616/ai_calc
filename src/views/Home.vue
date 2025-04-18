@@ -38,7 +38,7 @@
               </v-row>
 
               <!-- Row for Age and Eye -->
-              <v-row justify="center">
+              <v-row justify="center" class="align-center my-2">
                 <v-col cols="12" sm="10" md="5">
                   <v-text-field
                     v-model="formData.age"
@@ -54,32 +54,34 @@
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="10" md="5">
-                  <!-- Adjusted margin-top (mt-n2) for better alignment with compact text field -->
-                  <v-radio-group
-                    v-model="formData.eye"
-                    label="Eye"
-                    inline
-                    color="primary"
-                    class="mt-n2" 
-                    :rules="[rules.required]"
-                  >
-                    <v-radio
-                      label="Right"
-                      value="OD"
-                      class="me-4" 
-                    ></v-radio>
-                    <v-radio
-                      label="Left"
-                      value="OS"
-                      class="me-4" 
-                    ></v-radio>
-                  </v-radio-group>
+                  <div class="d-flex align-center" style="gap: 16px;">
+                    <span class="eye-inline-label text-body-1 text-medium-emphasis ml-4">Eye</span>
+                    <v-radio-group
+                      v-model="formData.eye"
+                      inline
+                      color="primary"
+                      class="mb-0"
+                      :rules="[rules.required]"
+                      style="margin-bottom: 0; align-items: center; display: flex; margin-top: -6px;"
+                    >
+                      <v-radio
+                        label="Right"
+                        value="OD"
+                        class="me-4 text-medium-emphasis"
+                      ></v-radio>
+                      <v-radio
+                        label="Left"
+                        value="OS"
+                        class="me-4 text-medium-emphasis"
+                      ></v-radio>
+                    </v-radio-group>
+                  </div>
                 </v-col>
               </v-row>
 
               <!-- Row for Corneal Astigmatism and Steep Axis -->
-              <v-row justify="center">
-                 <v-col cols="12" sm="10" md="5">
+              <v-row justify="center" style="margin-top: -8px;">
+                <v-col cols="12" sm="10" md="5">
                   <v-text-field
                     v-model="formData.corneal_astigmatism"
                     label="Corneal Astigmatism (D)"
@@ -93,7 +95,7 @@
                     :rules="[rules.required, rules.cornealAstigmatismRange]"
                   ></v-text-field>
                 </v-col>
-                 <v-col cols="12" sm="10" md="5">
+                <v-col cols="12" sm="10" md="5">
                   <v-text-field
                     v-model="formData.steep_axis"
                     label="Steep Axis (°)"
@@ -637,5 +639,14 @@ canvas {
 
 .patient-info-table tr:nth-child(even) {
   background-color: #f5f5f5;
+}
+
+.eye-inline-label {
+  min-width: 48px;
+  display: flex;
+  align-items: flex-end;
+  height: 40px;
+  margin-top: -32px;
+  font-size: 18px;
 }
 </style> 
