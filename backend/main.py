@@ -100,6 +100,7 @@ async def predict(data: PatientData):
         if type != "none":
             dmatrix = xgb.DMatrix(data=df, enable_categorical=True)
             prediction = np.max(np.round(model.predict(dmatrix)), 0)
+            prediction = min(prediction, 50)  # Cap prediction at 50
         else:
             prediction = 0 # Or handle as appropriate, e.g., skip prediction
 
