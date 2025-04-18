@@ -55,12 +55,12 @@
                 </v-col>
                 <v-col cols="12" sm="10" md="5">
                   <div class="d-flex align-center" style="gap: 16px;">
-                    <span class="eye-inline-label text-body-1 text-medium-emphasis ml-4">Eye</span>
+                    <span class="eye-inline-label text-body-1 text-medium-emphasis ml-4 eye-label-large">Eye</span>
                     <v-radio-group
                       v-model="formData.eye"
                       inline
                       color="primary"
-                      class="mb-0"
+                      class="mb-0 radio-align"
                       :rules="[rules.required]"
                       style="margin-bottom: 0; align-items: center; display: flex; margin-top: -6px;"
                     >
@@ -648,5 +648,13 @@ canvas {
   height: 40px;
   margin-top: -32px;
   font-size: 18px;
+}
+
+.radio-align {
+  margin-top: -18px !important;
+}
+
+.eye-label-large {
+  font-size: 1.15rem !important;
 }
 </style> 
