@@ -9,7 +9,7 @@ from typing import Literal
 from pathlib import Path
 import json
 
-app = FastAPI(title="XGBoost AI Calculator", description="A simple API for the XGBoost AI Calculator")
+app = FastAPI(title="AI Calculator", description="A simple API for calculating laser arcuate incisions using machine learning algorithms")
 
 # Generate a list of localhost origins for ports 8000-8010
 localhost_origins = [f"http://localhost:{port}" for port in range(8000, 8011)]
