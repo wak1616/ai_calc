@@ -33,6 +33,32 @@
       >
         Home
       </v-btn>
+
+      <!-- AI Model Selector Dropdown (Desktop) -->
+      <v-menu>
+        <template v-slot:activator="{ props: menuProps }">
+          <v-btn
+            text
+            v-bind="menuProps"
+            append-icon="mdi-menu-down"
+          >
+            AI Model: {{ props.selectedModel }}
+          </v-btn>
+        </template>
+        <v-list density="compact">
+          <v-list-item
+            v-for="model in aiModels" 
+            :key="model"
+            :value="model"
+            @click="$emit('update:model', model)"
+            :active="props.selectedModel === model"
+            color="primary"
+          >
+            <v-list-item-title>{{ model }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+
       <v-btn
         text
         :class="{ 'text--accent-4': currentRoute === '/about' }"
@@ -99,6 +125,37 @@
         <v-list-item-title>About</v-list-item-title>
       </v-list-item>
 
+      <!-- AI Model Selector (Mobile Drawer) -->
+      <v-list-item>
+        <v-list-item-title>
+          <v-menu location="right">
+            <template v-slot:activator="{ props: menuProps }">
+              <v-list-item
+                v-bind="menuProps"
+                class="pa-0"
+              >
+                <v-list-item-title>
+                  AI Model: {{ props.selectedModel }}
+                  <v-icon right>mdi-menu-right</v-icon> 
+                </v-list-item-title>
+              </v-list-item>
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-for="model in aiModels" 
+                :key="model"
+                :value="model"
+                @click="$emit('update:model', model); drawer = false"
+                :active="props.selectedModel === model"
+                color="primary"
+              >
+                <v-list-item-title>{{ model }}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-list-item-title>
+      </v-list-item>
+
       <v-list-item>
         <v-list-item-title>
           <v-menu location="right">
@@ -145,8 +202,22 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, defineProps, defineEmits } from 'vue'
 import { useRoute } from 'vue-router'
+
+// Define props received from App.vue
+const props = defineProps({
+  selectedModel: {
+    type: String,
+    required: true
+  }
+})
+
+// Define emits sent to App.vue
+const emit = defineEmits(['update:model'])
+
+// AI Model options
+const aiModels = ref(['Monotonic Neural Network', 'XGBoost'])
 
 // Determine the current route to apply active styling
 const route = useRoute()

@@ -275,9 +275,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick, watch, computed } from 'vue'
+import { ref, reactive, onMounted, nextTick, watch, computed, defineProps } from 'vue'
 import leftEyeTemplate from '@/assets/lefteyetemplate.jpg'
 import rightEyeTemplate from '@/assets/righteyetemplate.jpg'
+
+const props = defineProps({
+  selectedModel: {
+    type: String,
+    required: true
+  }
+})
 
 const form = ref(null)
 const formValid = ref(false)
@@ -292,7 +299,7 @@ const formData = reactive({
   corneal_astigmatism: null,
   steep_axis: null,
   mean_k: null,
-  WTW: null
+  WTW: null,
 })
 
 const finalData = ref(null)
@@ -345,13 +352,11 @@ const rules = {
 
 const showToricAlert = computed(() => {
   const astigmatism = Number(formData.corneal_astigmatism)
-  const axis = Number(formData.steep_axis)
-  return (astigmatism > 0.75 && (axis > 140 || axis < 40)) || 
-         (astigmatism > 1.25 && (axis <= 140 && axis >= 40))
+  return astigmatism >= 0.75
 })
 
-// Add watcher for formData changes
-watch(formData, () => {
+// Add watcher for formData changes OR selectedModel prop changes
+watch([formData, () => props.selectedModel], () => {
   // Only clear if we already have results showing
   if (finalData.value) {
     finalData.value = null
@@ -432,7 +437,8 @@ const handleSubmit = async () => {
       corneal_astigmatism: parseFloat(formData.corneal_astigmatism),
       steep_axis: parseFloat(formData.steep_axis),
       mean_k: parseFloat(formData.mean_k),
-      WTW: parseFloat(formData.WTW)
+      WTW: parseFloat(formData.WTW),
+      model_choice: props.selectedModel
     };
     
     console.log(`Sending request to ${API_URL.value}/predict with data:`, dataToSend);

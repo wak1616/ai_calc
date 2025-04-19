@@ -1,13 +1,21 @@
 <script setup>
+import { ref } from 'vue'
 import NavBar from '@/components/NavBar.vue'
+
+// State for selected AI model
+const selectedModel = ref('Monotonic Neural Network') // Default to MNN
+
+const handleModelUpdate = (newModel) => {
+  selectedModel.value = newModel
+}
 </script>
 
 <template>
   <v-app>
-    <NavBar />
+    <NavBar :selected-model="selectedModel" @update:model="handleModelUpdate" />
     <v-main>
       <v-container class="pa-8" max-width="1280">
-        <router-view />
+        <router-view :selected-model="selectedModel" />
       </v-container>
     </v-main>
   </v-app>
