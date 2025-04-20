@@ -60,10 +60,11 @@ class SimpleMonotonicNN(torch.nn.Module):
         return monotonic_feature_contributions.sum(dim=1, keepdim=True)
 
 # Define the PyTorch prediction function
-def predict_arcuate_sweep_pytorch(age, steep_axis_term, eye, wtw_iolmaster, 
+def predict_arcuate_sweep_pytorch(age, steep_axis_term, eye, wtw_iolmaster,
+                         meank_iolmaster: float,
                          # Removed _one versions, kept base names
-                         treatment_astigmatism, 
-                         type, 
+                         treatment_astigmatism,
+                         type,
                          treated_astig,
                          # Paths
                          weights_path: Path,
@@ -71,7 +72,14 @@ def predict_arcuate_sweep_pytorch(age, steep_axis_term, eye, wtw_iolmaster,
     """Predicts the arcuate sweep based on input features using PyTorch model.
 
     Args:
-        (args definitions omitted for brevity) ...
+        age (int): Age of the patient.
+        steep_axis_term (float): Cosine of the patient's steep axis.
+        eye (Literal["OD", "OS"]): Eye of the patient.
+        wtw_iolmaster (float): WTW value of the patient.
+        meank_iolmaster (float): The mean K value.
+        treatment_astigmatism (float): Corneal astigmatism of the patient.
+        type (Literal["none", "paired", "single"]): Type of arcuate incision.
+        treated_astig (float): Treated corneal astigmatism of the patient.
         weights_path (Path): Path to the model weights file (.pth).
         components_path (Path): Path to the model components file (.joblib).
 
@@ -114,10 +122,11 @@ def predict_arcuate_sweep_pytorch(age, steep_axis_term, eye, wtw_iolmaster,
     input_data = pd.DataFrame({
         'Age': [age],
         'Steep_axis_term': [steep_axis_term],
-        'Eye': [eye], 
+        'Eye': [eye],
         'WTW_IOLMaster': [wtw_iolmaster],
+        'MeanK_IOLMaster': [meank_iolmaster],
         'Treatment_astigmatism': [treatment_astigmatism], # Used in other_features
-        'Type': [type], 
+        'Type': [type],
         # 'Treated_astig' column is implicitly used via the treated_astig argument below
     })
 
@@ -215,11 +224,11 @@ class PatientData(BaseModel):
     DOS: str
     age: int = Field(ge=21, le=120, description="Age must be between 21 and 120 years")
     eye: Literal["OD", "OS"]
-    corneal_astigmatism: float = Field(ge=0.2, le=1.50, description="Corneal Astigmatism must be between 0.20 and 1.50 D")
+    corneal_astigmatism: float = Field(ge=0.25, le=1.50, description="Corneal Astigmatism must be between 0.25 and 1.50 D")
     steep_axis: float = Field(ge=0, le=180, description="Steep Axis must be between 0° and 180°")
     mean_k: float = Field(ge=30.00, le=50.00, description="Average K must be between 30.00 and 50.00 D")
     WTW: float = Field(ge=10.0, le=15.0, description="WTW must be between 10.0 and 15.0 mm")
-    model_choice: Literal["XGBoost", "Monotonic Neural Network"] # Changed Neural Network to Monotonic Neural Network
+    model_choice: Literal["XGBoost", "Monotonic Neural Network"]
 
     model_config = {
         "json_schema_extra": {
@@ -232,7 +241,7 @@ class PatientData(BaseModel):
                 "steep_axis": 90,
                 "mean_k": 44.00,
                 "WTW": 12.0,
-                "model_choice": "XGBoost" # Added example value
+                "model_choice": "XGBoost"
             }
         }
     }
@@ -247,14 +256,14 @@ def arcuatestartend(sweep: float, location: float) -> tuple[float, float]:
 async def predict(data: PatientData):
     try:
         # Calculate derived variables
-        if data.corneal_astigmatism < 0.2: # Adjusted to < 0.2 to match training/previous logic interpretation
-            type = "none" 
-        elif data.steep_axis > 140 or data.steep_axis < 40:
-            # Consistent with training script's 'Type' column generation if ATR is single
-            type = "single" 
+        if data.corneal_astigmatism < 0.25:
+            type = "none"
+        elif data.steep_axis >= 40 and data.steep_axis <= 140:
+            # Consistent with training script's 'Type' column generation if arcuate is paired
+            type = "paired"
         else:
-            # Consistent with training script's 'Type' column generation if WTR is paired
-            type = "paired" 
+            # Consistent with training script's 'Type' column generation if arcuate is single
+            type = "single"
             
         steep_axis_term = np.cos(np.radians(data.steep_axis * 2))
 
@@ -266,17 +275,16 @@ async def predict(data: PatientData):
                 df = pd.DataFrame({
                     'Age': [data.age],
                     'Steep_axis_term': [steep_axis_term],
-                    'Eye': pd.Categorical([data.eye]), 
+                    'Eye': pd.Categorical([data.eye]),
                     'WTW_IOLMaster': [data.WTW],
                     'MeanK_IOLMaster': [data.mean_k],
-                    'Treated_astig': [data.corneal_astigmatism], 
+                    'Treated_astig': [data.corneal_astigmatism],
                     'Treatment_astigmatism': [data.corneal_astigmatism],
+                    'Type': pd.Categorical([type])
                 })
-                # Check if 'Eye' category exists before creating DMatrix if necessary
-                # (Assuming Eye categories are handled correctly by XGBoost's enable_categorical)
+           
                 dmatrix = xgb.DMatrix(data=df, enable_categorical=True)
-                prediction = np.max(np.round(xgb_model.predict(dmatrix)), 0)
-                prediction = min(prediction, 50)  # Cap prediction at 50
+                prediction = np.max(xgb_model.predict(dmatrix), 0)
 
             elif data.model_choice == "Monotonic Neural Network":
                 # PyTorch Prediction
@@ -297,33 +305,39 @@ async def predict(data: PatientData):
                     steep_axis_term=steep_axis_term,
                     eye=data.eye,
                     wtw_iolmaster=data.WTW,
-                    # Pass the direct corneal_astigmatism value for both
+                    meank_iolmaster=data.mean_k,
                     treatment_astigmatism=treatment_astigmatism_input,
-                    type=type, # Type is still needed as a feature
+                    type=type, 
                     treated_astig=treated_astig_input, 
                     # Paths
                     weights_path=pytorch_weights_path,
                     components_path=pytorch_components_path
                 )
                 # === End Modified ===
-                prediction = round(prediction) # Round the prediction 
-                prediction = max(0.0, prediction) # Ensure non-negative
 
-                # Divide prediction by 2 if type is paired BEFORE capping
-                if type == "paired":
-                    prediction /= 2
-                
-                # Apply capping AFTER potential division
+            # Divide prediction by 2 if type is paired BEFORE capping
+            if type == "paired":
+                prediction /= 2
                 prediction = min(prediction, 50) 
+                prediction = round(prediction)
+
+            else:
+                prediction = min(prediction, 50) 
+                prediction = round(prediction) # Round the prediction 
 
         else:
             # Type is "none", prediction remains 0
             pass 
 
         # Calculate arcuate positions - only if type is not 'none'
+        # Initialize values assuming no incision
         arc1start, arc1end, arc2start, arc2end = 0.0, 0.0, 0.0, 0.0
         arc1axis, arc2axis = 0.0, 0.0
-        if type != "none":
+        arcuate1text = "No arcuate incision needed" # Default text
+        arcuate2text = ""
+
+        # MODIFIED: Check prediction > 0 AFTER all calculations
+        if type != "none" and prediction > 0:
             # Axis calculation logic remains the same
             if (data.eye == "OD" and data.steep_axis > 140) or \
                (data.eye == "OS" and data.steep_axis < 40): # Single ATR case
@@ -334,40 +348,30 @@ async def predict(data: PatientData):
                 arc1axis = data.steep_axis
                 arc2axis = (data.steep_axis + 180) % 360 # Normalize paired axis
 
-            # Calculate start/end angles for the determined type
+            # Calculate start/end angles and generate text based on type
             if type == "single":
                  arc1start, arc1end = arcuatestartend(prediction, arc1axis)
-                 # arc2start, arc2end remain 0
+                 # Update text only if prediction > 0
+                 arc1axis_display = round(arc1axis)
+                 arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis_display:.0f}°"
+                 # arc2start, arc2end, arcuate2text remain default (0 or empty)
             elif type == "paired":
                  arc1start, arc1end = arcuatestartend(prediction, arc1axis)
                  arc2start, arc2end = arcuatestartend(prediction, arc2axis)
-        
-        # Generate output based on type
-        if type == "none":
-            arcuate1text = "No arcuate incision needed"
-            arcuate2text = ""
-            # arc starts/ends are already 0
-        elif type == "single":
-            # Use the calculated single axis (arc1axis) for display
-            arc1axis_display = round(arc1axis) # Display rounded axis
-            arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis_display:.0f}°"
-            arcuate2text = ""
-            # arc2start, arc2end remain 0
-        else: # type == "paired"
-            # Use calculated axes, ensure they are rounded for display
-            arc1axis_display = round(arc1axis)
-            arc2axis_display = round(arc2axis)
-            arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis_display:.0f}°"
-            arcuate2text = f"Arcuate 2: {prediction:.0f} degree sweep @ {arc2axis_display:.0f}°"
+                 # Update text only if prediction > 0
+                 arc1axis_display = round(arc1axis)
+                 arc2axis_display = round(arc2axis)
+                 arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis_display:.0f}°"
+                 arcuate2text = f"Arcuate 2: {prediction:.0f} degree sweep @ {arc2axis_display:.0f}°"
 
-        # Ensure JSON serializability
+        # Ensure JSON serializability (arc angles are already floats)
         return {
             'arcuate1text': arcuate1text,
             'arcuate2text': arcuate2text,
-            'arc1start': float(arc1start),
-            'arc1end': float(arc1end),
-            'arc2start': float(arc2start),
-            'arc2end': float(arc2end)
+            'arc1start': arc1start,
+            'arc1end': arc1end,
+            'arc2start': arc2start,
+            'arc2end': arc2end
         }
     
     except FileNotFoundError as e:

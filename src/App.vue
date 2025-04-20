@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 
 // State for selected AI model
-const selectedModel = ref('Monotonic Neural Network') // Default to MNN
+const selectedModel = ref('XGBoost') // MODIFIED: Default to XGBoost
 
 const handleModelUpdate = (newModel) => {
   selectedModel.value = newModel

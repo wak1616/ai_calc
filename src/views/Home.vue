@@ -86,12 +86,12 @@
                     v-model="formData.corneal_astigmatism"
                     label="Corneal Astigmatism (D)"
                     type="number"
-                    min="0.20" 
+                    min="0.25"
                     max="1.50"
                     step="0.01"
                     variant="outlined"
-                    color="primary" 
-                    density="compact" 
+                    color="primary"
+                    density="compact"
                     :rules="[rules.required, rules.cornealAstigmatismRange]"
                   ></v-text-field>
                 </v-col>
@@ -334,7 +334,7 @@ const rules = {
   },
   cornealAstigmatismRange: value => {
     const num = Number(value)
-    return (num >= 0.20 && num <= 1.50) || 'Corneal Astigmatism must be between 0.20 and 1.50 D'
+    return (num >= 0.25 && num <= 1.50) || 'Corneal Astigmatism must be between 0.25 and 1.50 D'
   },
   steepAxisRange: value => {
     const num = Number(value)

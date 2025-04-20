@@ -4,11 +4,11 @@ A web application for calculating and visualizing arcuate incisions for astigmat
 
 ## Features
 
-- Patient data input validation
-- AI-powered incision length prediction *(using XGBoost or Monotonic Neural Network model)*
+- Patient data input validation (e.g., Corneal Astigmatism: 0.25-1.50 D)
+- AI-powered incision length prediction (using XGBoost or Monotonic Neural Network model)
 - Visual representation of arcuate incisions
 - Support for both single and paired arcuates
-- Selectable prediction model (XGBoost or Monotonic Neural Network)
+- Selectable prediction model (XGBoost or Monotonic Neural Network, XGBoost is default)
 
 
 ## Prerequisites
@@ -68,12 +68,12 @@ The application will be served at http://localhost:8000
 
 ## Model Information
 
-The application uses an XGBoost model and optionally a PyTorch-based Monotonic Neural Network model for predictions. 
+The application uses an XGBoost model (default) and optionally a PyTorch-based Monotonic Neural Network model for predictions. 
 
 - The XGBoost model file `XGBoost_model_full.json` is included in this repository in the `backend/` directory.
 - **For the Monotonic Neural Network option:** You need to place the following files into the `backend/` directory:
     - `model_weights.pth` (PyTorch model state dictionary)
-    - `model_components.joblib` (Scalers and label encoders)
+    - `model_components.joblib` (Scalers, label encoders, and feature orders)
 
 These files are required for the "Monotonic Neural Network" selection to function.
 

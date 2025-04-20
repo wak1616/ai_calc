@@ -117,13 +117,6 @@
       >
         <v-list-item-title>Home</v-list-item-title>
       </v-list-item>
-      
-      <v-list-item
-        to="/about"
-        @click="drawer = false"
-      >
-        <v-list-item-title>About</v-list-item-title>
-      </v-list-item>
 
       <!-- AI Model Selector (Mobile Drawer) -->
       <v-list-item>
@@ -136,13 +129,13 @@
               >
                 <v-list-item-title>
                   AI Model: {{ props.selectedModel }}
-                  <v-icon right>mdi-menu-right</v-icon> 
+                  <v-icon right>mdi-menu-right</v-icon>
                 </v-list-item-title>
               </v-list-item>
             </template>
             <v-list density="compact">
               <v-list-item
-                v-for="model in aiModels" 
+                v-for="model in aiModels"
                 :key="model"
                 :value="model"
                 @click="$emit('update:model', model); drawer = false"
@@ -156,6 +149,14 @@
         </v-list-item-title>
       </v-list-item>
 
+      <v-list-item
+        to="/about"
+        @click="drawer = false"
+      >
+        <v-list-item-title>About</v-list-item-title>
+      </v-list-item>
+
+      <!-- Other Resources (Mobile Drawer) -->
       <v-list-item>
         <v-list-item-title>
           <v-menu location="right">
@@ -217,7 +218,7 @@ const props = defineProps({
 const emit = defineEmits(['update:model'])
 
 // AI Model options
-const aiModels = ref(['Monotonic Neural Network', 'XGBoost'])
+const aiModels = ref(['XGBoost', 'Monotonic Neural Network'])
 
 // Determine the current route to apply active styling
 const route = useRoute()
