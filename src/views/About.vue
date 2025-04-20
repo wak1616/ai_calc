@@ -71,8 +71,8 @@ const assumptions = [
   'The ALLY® Robotic Cataract Laser System (LENSAR, Inc) is used to make laser arcuate keratotomies (AKs).',
   'AKs are made at 80% depth.',
   'AKs are made at 4.5mm radius from the visual center.',
-  'All AKs were opened at the time of surgery with a BSS irrigation cannula.',
-  'We do not recommend treating very low levels of astigmatism (<= 0.2 D) with AKs.',
+  'All AKs were opened and irrigated at the time of surgery with a BSS cannula.',
+  'We do not recommend treating very low levels of astigmatism (< 0.25 D) with AKs.',
   'Maximum AK sweep have been capped at 50 degrees. It is our opinion that higher levels of astigmatism should be treated with toric lenses over laser AKs.',
   'The nomogram assumes a clear corneal temporal incision with a 2.4-2.8mm blade which can be assumed to create ~0.2 D of SIA at 180 deg. An "average" SIA has been captured by the weights during the machine learning process. Inputting a presumed SIA for an individual surgeon has not been shown to significantly improve results.',
   'The current iteration of this model was been trained using K readings and other measurements from the IOLMaster 700 (Zeiss Meditec).'
