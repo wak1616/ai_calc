@@ -11,10 +11,10 @@
         <div class="text-body-1 mb-4">Multiple published models or "nomograms" exist to help guide surgeons on incision parameters (length, distance from center, depth). Links to some prior published nomograms are available in the "Other Resources" menu at the top of the webpage.</div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">The Model</div>
-        <div class="text-body-1 mb-4">The De Rojas AI Calc model has been developed using advanced machine learning algorithms and has been trained and validated on hundreds of cases. Case data were obtained from Drs. Joaquin De Rojas, Denise Visco, Priya Mathews, and William Soscia. Please note that the model is currently in its BETA version.</div>
+        <div class="text-body-1 mb-4">The De Rojas AI Calc model has been developed using machine learning algorithms and has been trained and validated on hundreds of LENSAR femotsecond laser cases from experienced surgeons.</div>
         
         <div class="text-h5 font-weight-medium mb-3 mt-5">About the machine learning models used:</div>
-        <div class="text-body-1 mb-4">This calculator offers predictions based on two distinct machine learning models:</div>
+        <div class="text-body-1 mb-4">This calculator offers predictions based on two distinct machine learning algorithms:</div>
         <div class="text-body-1 mb-4">
           <ul class="pl-4">
             <li class="mb-2">
@@ -38,7 +38,7 @@
         </div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Future Development</div>
-        <div class="text-body-1 mb-4">The author plans to create updated, customizable versions of this model. Future iterations may allow retraining based on user-submitted datasets with post-operative outcomes.</div>
+        <div class="text-body-1 mb-4">Please note that these models are currently in BETA. The author plans to create updated, customizable versions of this model. Future iterations may allow retraining based on user-submitted datasets with post-operative outcomes.</div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Disclaimer</div>
         <v-alert
@@ -46,7 +46,7 @@
           class="mb-4 font-weight-bold disclaimer-alert"
           elevation="2"
         >
-          IN ITS CURRENT FORM, THIS WEBSITE/NOMOGRAM IS INTENDED FOR INVESTIGATIONAL PURPOSES ONLY. IT IS NOT APPROVED TO GUIDE SURGICAL CORRECTION OF ASTIGMATISM IN HUMANS.
+          THIS WEBSITE APPLICATION IS INTENDED FOR INVESTIGATIONAL PURPOSES ONLY. IT IS NOT APPROVED TO GUIDE SURGICAL CORRECTION OF ASTIGMATISM IN HUMANS.
         </v-alert>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Contact</div>
