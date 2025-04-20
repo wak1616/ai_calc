@@ -5,16 +5,16 @@
         <div class="text-h3 font-weight-medium mb-6">About De Rojas AI Calc</div>
 
         <div class="text-h5 font-weight-medium mb-3">Background</div>
-        <div class="text-body-1 mb-4">Arcuate keratotomies of the cornea (also known as arcuate incisions) are used in ophthalmic surgery to treat astigmatism during cataract surgery and lens exchange procedures. They are a powerful tool, but there is limited medical consensus on how to best employ them, how to create them (e.g., via femtosecond laser or manual blades?), or how to fine-tune them for specific levels of astigmatism or patient characteristics.</div>
-        <div class="text-body-1 mb-4">The author, Joaquin De Rojas, MD, has extensive experience using femtosceond laser arcuate keratotomies to improve visual outcomes for his patients.</div>
+        <div class="text-body-1 mb-4"><strong>Arcuate incisions ("AIs")</strong>, also known as arcuate keratotomies, are used during cataract surgery to correct astigmatism. They are a powerful tool, but there is limited medical consensus on how to best employ them, how to create them (e.g., via femtosecond laser/"FLACS" or manually with diamond blades?), or how to fine-tune them for specific levels of astigmatism or patient characteristics.</div>
+        <div class="text-body-1 mb-4">The author has extensive experience using precisely-placed femtosecond laser-created AIs to improve visual outcomes for his patients.</div>
 
-        <div class="text-body-1 mb-4">Multiple published models or "nomograms" exist to help guide surgeons on incision parameters (length, distance from center, depth). Links to some prior published nomograms are available in the "Other Resources" menu at the top of the webpage.</div>
+        <div class="text-body-1 mb-4">Multiple published models nomograms exist to help guide surgeons on incision parameters (sweep length and axis). Links to some prior published nomograms are available in the "Other Resources" menu at the top of the webpage.</div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">The Model</div>
-        <div class="text-body-1 mb-4">The De Rojas AI Calc model has been developed using machine learning algorithms and has been trained and validated on hundreds of LENSAR femotsecond laser cases from experienced surgeons.</div>
+        <div class="text-body-1 mb-4">The De Rojas AI Calc model has been developed using machine learning algorithms and has been trained and validated on hundreds FLACS cases perfromed by experienced surgeons.</div>
         
         <div class="text-h5 font-weight-medium mb-3 mt-5">About the machine learning models used:</div>
-        <div class="text-body-1 mb-4">This calculator offers predictions based on two distinct machine learning algorithms:</div>
+        <div class="text-body-1 mb-4">This calculator offers predictions based on two distinct machine learning algorithms that can be toggled:</div>
         <div class="text-body-1 mb-4">
           <ul class="pl-4">
             <li class="mb-2">
@@ -28,7 +28,7 @@
         <div class="text-body-1 mb-4">Unlike many traditional nomograms that primarily rely on astigmatism magnitude and possibly age, our models incorporate a richer set of patient data. Features such as laterality (OD/OS), white-to-white distance (WTW), and average keratometry (Mean K), in addition to age and astigmatism details (magnitude and axis), allow the models to learn more nuanced patterns and potentially provide more personalized predictions. The use of sophisticated algorithms like XGBoost further enables the deciphering of complex interactions between these features that simpler linear models might miss.</div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Model Assumptions</div>
-        <div class="text-body-1 mb-4">The model has been trained based on the following assumptions:</div>
+        <div class="text-body-1 mb-4">The model was trained with the following assumptions:</div>
         <div class="text-body-1 mb-4">
           <ul class="pl-4">
             <li v-for="(item, i) in assumptions" :key="i" class="mb-2">
@@ -50,7 +50,7 @@
         </v-alert>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Contact</div>
-        <div class="text-body-1 d-flex align-center">
+        <div class="text-body-1 d-flex align-center mb-6">
           Please feel free to email the author with any questions or concerns:
           <v-btn
             href="mailto:joaquin.derojas@gmail.com"
@@ -58,7 +58,7 @@
             class="text-primary pa-0 text-decoration-underline text-none ms-1"
             style="height: auto;"
           >
-            joaquin.derojas@gmail.com
+          joaquin.derojas@gmail.com
           </v-btn>
         </div>
       </v-col>
@@ -82,7 +82,7 @@ const assumptions = [
 <style scoped>
 .disclaimer-alert {
   background-color: #ffebee !important; /* Light red */
-  color: #b71c1c !important;           /* Dark red text for contrast */
+  color: #f1470a !important;           
   border-left: 6px solid #ffcdd2 !important; /* Light red border to match background */
 }
 </style>

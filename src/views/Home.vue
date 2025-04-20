@@ -10,279 +10,272 @@
           THIS WEBSITE APPLICATION IS INTENDED FOR INVESTIGATIONAL PURPOSES ONLY. IT IS NOT APPROVED TO GUIDE SURGICAL CORRECTION OF ASTIGMATISM IN HUMANS.
         </v-alert>
         
-        <v-card elevation="2">
-          <v-card-title class="text-h5 font-weight-medium primary white--text">
-            <v-container>
-              <div class="text-h6 font-weight-regular mb-4 text-medium-emphasis pl-4 no-print">Please enter case details below, then submit:</div>
-              
-              <v-card class="mb-6 pa-4" elevation="2">
-                <v-card-text>
-                  <v-form
-                    ref="form"
-                    @submit.prevent="handleSubmit"
-                    v-model="formValid"
-                    class="no-print"
+        <v-card-title class="text-h5 font-weight-medium primary white--text">
+          <v-container>
+            <div class="text-h6 font-weight-regular mb-4 text-medium-emphasis pl-4 no-print">Please enter case details below, then submit:</div>
+            
+            <v-card class="mb-4 pa-4" elevation="2">
+              <v-card-text>
+                <v-form
+                  ref="form"
+                  @submit.prevent="handleSubmit"
+                  v-model="formValid"
+                  class="no-print"
+                >
+                  <!-- Row for ID and DOS -->
+                  <v-row justify="center">
+                    <v-col cols="12" sm="10" md="5">
+                      <v-text-field
+                        v-model="formData.ID"
+                        label="Patient ID"
+                        variant="outlined"
+                        color="primary"
+                        density="compact" 
+                        :rules="[rules.required]"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="10" md="5">
+                      <v-text-field
+                        v-model="formData.DOS"
+                        label="Date of Surgery"
+                        type="date"
+                        variant="outlined"
+                        color="primary"
+                        density="compact" 
+                        :rules="[rules.required]"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+
+                  <!-- Row for Age and Eye -->
+                  <v-row justify="center" class="align-center my-2">
+                    <v-col cols="12" sm="10" md="5">
+                      <v-text-field
+                        v-model="formData.age"
+                        label="Age (years)"
+                        type="number"
+                        min="21" 
+                        max="120"
+                        step="1"
+                        variant="outlined"
+                        color="primary"
+                        density="compact" 
+                        :rules="[rules.required, rules.ageRange]"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="10" md="5">
+                      <div class="d-flex align-center" style="gap: 16px;">
+                        <span class="eye-inline-label text-body-1 text-medium-emphasis ml-4 eye-label-large">Eye</span>
+                        <v-radio-group
+                          v-model="formData.eye"
+                          inline
+                          color="primary"
+                          class="mb-0 radio-align"
+                          :rules="[rules.required]"
+                          style="margin-bottom: 0; align-items: center; display: flex; margin-top: -6px;"
+                        >
+                          <v-radio
+                            label="Right"
+                            value="OD"
+                            class="me-4 text-medium-emphasis"
+                          ></v-radio>
+                          <v-radio
+                            label="Left"
+                            value="OS"
+                            class="me-4 text-medium-emphasis"
+                          ></v-radio>
+                        </v-radio-group>
+                      </div>
+                    </v-col>
+                  </v-row>
+
+                  <!-- Row for Corneal Astigmatism and Steep Axis -->
+                  <v-row justify="center" style="margin-top: -8px;">
+                    <v-col cols="12" sm="10" md="5">
+                      <v-text-field
+                        v-model="formData.corneal_astigmatism"
+                        label="Corneal Astigmatism (D)"
+                        type="number"
+                        min="0.25"
+                        max="1.50"
+                        step="0.01"
+                        variant="outlined"
+                        color="primary"
+                        density="compact"
+                        :rules="[rules.required, rules.cornealAstigmatismRange]"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="10" md="5">
+                      <v-text-field
+                        v-model="formData.steep_axis"
+                        label="Steep Axis (°)"
+                        type="number"
+                        min="0"
+                        max="180"
+                        step="1"
+                        variant="outlined"
+                        color="primary" 
+                        density="compact" 
+                        :rules="[rules.required, rules.steepAxisRange]"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+
+                  <!-- Row for Mean K and WTW -->
+                  <v-row justify="center">
+                    <v-col cols="12" sm="10" md="5">
+                      <v-text-field
+                        v-model="formData.mean_k"
+                        label="Average K (D)"
+                        type="number"
+                        min="30.00"
+                        max="50.00"
+                        step="0.01"
+                        variant="outlined"
+                        color="primary" 
+                        density="compact" 
+                        :rules="[rules.required, rules.meanKRange]"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="10" md="5">
+                      <v-text-field
+                        v-model="formData.WTW"
+                        label="WTW (mm)"
+                        type="number"
+                        min="10.0"
+                        max="15.0"
+                        step="0.1"
+                        variant="outlined"
+                        color="primary" 
+                        density="compact" 
+                        :rules="[rules.required, rules.wtwRange]"
+                      ></v-text-field>
+                    </v-col>
+                  </v-row>
+
+                  <!-- Submit Button - Centered -->
+                  <v-row justify="center">
+                    <v-col cols="auto">
+                      <div class="mt-4">
+                        <v-btn 
+                          type="submit" 
+                          color="primary" 
+                          size="large"
+                          elevation="2"
+                          class="px-8"
+                          :disabled="!formValid || isLoading"
+                          :loading="isLoading"
+                        >
+                          Submit
+                        </v-btn>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </v-form>
+
+                <v-fade-transition>
+                  <v-alert
+                    v-if="showToricAlert"
+                    type="warning"
+                    variant="tonal"
+                    class="mt-4 no-print"
+                    closable
                   >
-                    <!-- Row for ID and DOS -->
-                    <v-row justify="center">
-                      <v-col cols="12" sm="10" md="5">
-                        <v-text-field
-                          v-model="formData.ID"
-                          label="Patient ID"
-                          variant="outlined"
-                          color="primary"
-                          density="compact" 
-                          :rules="[rules.required]"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="10" md="5">
-                        <v-text-field
-                          v-model="formData.DOS"
-                          label="Date of Surgery"
-                          type="date"
-                          variant="outlined"
-                          color="primary"
-                          density="compact" 
-                          :rules="[rules.required]"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
+                    Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (>= 1.25 WTR or >= 0.75 ATR). Consider a toric IOL as a more predictable alternative.
+                  </v-alert>
+                </v-fade-transition>
 
-                    <!-- Row for Age and Eye -->
-                    <v-row justify="center" class="align-center my-2">
-                      <v-col cols="12" sm="10" md="5">
-                        <v-text-field
-                          v-model="formData.age"
-                          label="Age (years)"
-                          type="number"
-                          min="21" 
-                          max="120"
-                          step="1"
-                          variant="outlined"
-                          color="primary"
-                          density="compact" 
-                          :rules="[rules.required, rules.ageRange]"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="10" md="5">
-                        <div class="d-flex align-center" style="gap: 16px;">
-                          <span class="eye-inline-label text-body-1 text-medium-emphasis ml-4 eye-label-large">Eye</span>
-                          <v-radio-group
-                            v-model="formData.eye"
-                            inline
-                            color="primary"
-                            class="mb-0 radio-align"
-                            :rules="[rules.required]"
-                            style="margin-bottom: 0; align-items: center; display: flex; margin-top: -6px;"
-                          >
-                            <v-radio
-                              label="Right"
-                              value="OD"
-                              class="me-4 text-medium-emphasis"
-                            ></v-radio>
-                            <v-radio
-                              label="Left"
-                              value="OS"
-                              class="me-4 text-medium-emphasis"
-                            ></v-radio>
-                          </v-radio-group>
-                        </div>
-                      </v-col>
-                    </v-row>
+                <v-fade-transition>
+                  <v-alert
+                    v-if="errorMessage"
+                    type="error"
+                    variant="tonal"
+                    class="mt-4 no-print"
+                    closable
+                    @click:close="errorMessage = ''"
+                  >
+                    {{ errorMessage }}
+                  </v-alert>
+                </v-fade-transition>
+                
+                <!-- Print-only patient information -->
+                <div class="print-only mt-4">
+                  <h2 class="text-h5 mb-4">Patient Information</h2>
+                  <table class="patient-info-table">
+                    <tbody>
+                      <tr>
+                        <td><strong>Patient ID:</strong></td>
+                        <td>{{ formData.ID }}</td>
+                        <td><strong>Date of Surgery:</strong></td>
+                        <td>{{ formData.DOS }}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Age:</strong></td>
+                        <td>{{ formData.age }} years</td>
+                        <td><strong>Eye:</strong></td>
+                        <td>{{ formData.eye === 'OD' ? 'Right' : 'Left' }}</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Corneal Astigmatism:</strong></td>
+                        <td>{{ formData.corneal_astigmatism }} D</td>
+                        <td><strong>Steep Axis:</strong></td>
+                        <td>{{ formData.steep_axis }}°</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Average K:</strong></td>
+                        <td>{{ formData.mean_k }} D</td>
+                        <td><strong>WTW:</strong></td>
+                        <td>{{ formData.WTW }} mm</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
 
-                    <!-- Row for Corneal Astigmatism and Steep Axis -->
-                    <v-row justify="center" style="margin-top: -8px;">
-                      <v-col cols="12" sm="10" md="5">
-                        <v-text-field
-                          v-model="formData.corneal_astigmatism"
-                          label="Corneal Astigmatism (D)"
-                          type="number"
-                          min="0.25"
-                          max="1.50"
-                          step="0.01"
-                          variant="outlined"
-                          color="primary"
-                          density="compact"
-                          :rules="[rules.required, rules.cornealAstigmatismRange]"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="10" md="5">
-                        <v-text-field
-                          v-model="formData.steep_axis"
-                          label="Steep Axis (°)"
-                          type="number"
-                          min="0"
-                          max="180"
-                          step="1"
-                          variant="outlined"
-                          color="primary" 
-                          density="compact" 
-                          :rules="[rules.required, rules.steepAxisRange]"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-
-                    <!-- Row for Mean K and WTW -->
-                    <v-row justify="center">
-                      <v-col cols="12" sm="10" md="5">
-                        <v-text-field
-                          v-model="formData.mean_k"
-                          label="Average K (D)"
-                          type="number"
-                          min="30.00"
-                          max="50.00"
-                          step="0.01"
-                          variant="outlined"
-                          color="primary" 
-                          density="compact" 
-                          :rules="[rules.required, rules.meanKRange]"
-                        ></v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="10" md="5">
-                        <v-text-field
-                          v-model="formData.WTW"
-                          label="WTW (mm)"
-                          type="number"
-                          min="10.0"
-                          max="15.0"
-                          step="0.1"
-                          variant="outlined"
-                          color="primary" 
-                          density="compact" 
-                          :rules="[rules.required, rules.wtwRange]"
-                        ></v-text-field>
-                      </v-col>
-                    </v-row>
-
-                    <!-- Submit Button - Centered -->
+                <v-fade-transition>
+                  <div v-if="finalData" class="mt-8">
+                    <v-card
+                      class="bg-grey-darken-3 mb-4 print-dark"
+                      elevation="3"
+                    >
+                      <v-card-text>
+                        <div class="text-h6" :style="{ color: ARCUATE_COLORS.first }">{{ finalData.arcuate1text }}</div>
+                        <div v-if="finalData.arcuate2text" class="text-h6" :style="{ color: ARCUATE_COLORS.second }">{{ finalData.arcuate2text }}</div>
+                      </v-card-text>
+                    </v-card>
+                    
+                    <v-card
+                      class="mb-4"
+                      elevation="2"
+                      rounded="lg"
+                    >
+                      <canvas ref="myCanvas" width="1024" height="1024"></canvas>
+                      <div class="text-center pa-2 eye-label">
+                        <span class="text-h4 font-weight-bold">
+                          {{ formData.eye === 'OD' ? 'RIGHT EYE' : 'LEFT EYE' }}
+                        </span>
+                      </div>
+                    </v-card>
+                    
+                    <!-- Print button appears only after calculation -->
                     <v-row justify="center">
                       <v-col cols="auto">
-                        <div class="mt-4">
-                          <v-btn 
-                            type="submit" 
-                            color="primary" 
-                            size="large"
-                            elevation="2"
-                            class="px-8"
-                            :disabled="!formValid || isLoading"
-                            :loading="isLoading"
-                          >
-                            Submit
-                          </v-btn>
-                        </div>
+                        <v-btn
+                          color="primary"
+                          size="large"
+                          class="mt-4 no-print"
+                          prepend-icon="mdi-printer"
+                          @click="printResults"
+                        >
+                          Print Results
+                        </v-btn>
                       </v-col>
                     </v-row>
-                  </v-form>
-
-                  <v-fade-transition>
-                    <v-alert
-                      v-if="showToricAlert"
-                      type="warning"
-                      variant="tonal"
-                      class="mt-4 no-print"
-                      closable
-                    >
-                      Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (>= 1.25 WTR or >= 0.75 ATR). Consider a toric IOL for a stabler or more predictable alternative.
-                    </v-alert>
-                  </v-fade-transition>
-
-                  <v-fade-transition>
-                    <v-alert
-                      v-if="errorMessage"
-                      type="error"
-                      variant="tonal"
-                      class="mt-4 no-print"
-                      closable
-                      @click:close="errorMessage = ''"
-                    >
-                      {{ errorMessage }}
-                    </v-alert>
-                  </v-fade-transition>
-                  
-                  <!-- Print-only patient information -->
-                  <div class="print-only mt-4">
-                    <h2 class="text-h5 mb-4">Patient Information</h2>
-                    <table class="patient-info-table">
-                      <tbody>
-                        <tr>
-                          <td><strong>Patient ID:</strong></td>
-                          <td>{{ formData.ID }}</td>
-                          <td><strong>Date of Surgery:</strong></td>
-                          <td>{{ formData.DOS }}</td>
-                        </tr>
-                        <tr>
-                          <td><strong>Age:</strong></td>
-                          <td>{{ formData.age }} years</td>
-                          <td><strong>Eye:</strong></td>
-                          <td>{{ formData.eye === 'OD' ? 'Right' : 'Left' }}</td>
-                        </tr>
-                        <tr>
-                          <td><strong>Corneal Astigmatism:</strong></td>
-                          <td>{{ formData.corneal_astigmatism }} D</td>
-                          <td><strong>Steep Axis:</strong></td>
-                          <td>{{ formData.steep_axis }}°</td>
-                        </tr>
-                        <tr>
-                          <td><strong>Average K:</strong></td>
-                          <td>{{ formData.mean_k }} D</td>
-                          <td><strong>WTW:</strong></td>
-                          <td>{{ formData.WTW }} mm</td>
-                        </tr>
-                      </tbody>
-                    </table>
                   </div>
-
-                  <v-fade-transition>
-                    <div v-if="finalData" class="mt-8">
-                      <v-card
-                        class="bg-grey-darken-3 mb-4 print-dark"
-                        elevation="3"
-                      >
-                        <v-card-text>
-                          <div class="text-h6" :style="{ color: ARCUATE_COLORS.first }">{{ finalData.arcuate1text }}</div>
-                          <div v-if="finalData.arcuate2text" class="text-h6" :style="{ color: ARCUATE_COLORS.second }">{{ finalData.arcuate2text }}</div>
-                        </v-card-text>
-                      </v-card>
-                      
-                      <v-card
-                        class="mb-4"
-                        elevation="2"
-                        rounded="lg"
-                      >
-                        <canvas ref="myCanvas" width="1024" height="1024"></canvas>
-                        <div class="text-center pa-2 eye-label">
-                          <span class="text-h4 font-weight-bold">
-                            {{ formData.eye === 'OD' ? 'RIGHT EYE' : 'LEFT EYE' }}
-                          </span>
-                        </div>
-                      </v-card>
-                      
-                      <!-- Print button appears only after calculation -->
-                      <v-row justify="center">
-                        <v-col cols="auto">
-                          <v-btn
-                            color="primary"
-                            size="large"
-                            class="mt-4 no-print"
-                            prepend-icon="mdi-printer"
-                            @click="printResults"
-                          >
-                            Print Results
-                          </v-btn>
-                        </v-col>
-                      </v-row>
-                    </div>
-                  </v-fade-transition>
-                </v-card-text>
-              </v-card>
-            </v-container>
-          </v-card-title>
-        </v-card>
-      </v-col>
-    </v-row>
-    <v-row justify="center" class="mt-auto pb-2 no-print">
-      <v-col cols="12" class="text-center text-caption text-medium-emphasis">
-        © {{ new Date().getFullYear() }} De Rojas AI Calc. All rights reserved.
+                </v-fade-transition>
+              </v-card-text>
+            </v-card>
+          </v-container>
+        </v-card-title>
       </v-col>
     </v-row>
   </v-container>
@@ -643,11 +636,6 @@ canvas {
     page-break-inside: avoid !important;
   }
   
-  /* Footer fix to prevent page breaks */
-  .mt-auto {
-    display: none !important;
-  }
-
   /* Patient Info Table adjustments */
   .patient-info-table {
     margin-bottom: 10px !important;
@@ -698,7 +686,7 @@ canvas {
 
 .disclaimer-alert {
   background-color: #ffebee !important; /* Light red */
-  color: #b71c1c !important;           /* Dark red text for contrast */
+  color: #f1470a !important;           /* Dark red text for contrast */
   border-left: 6px solid #ffcdd2 !important; /* Light red border to match background */
 }
 </style> 

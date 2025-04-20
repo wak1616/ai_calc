@@ -37,9 +37,14 @@ app.add_middleware(
 )
 
 # Load the XGBoost model
-model_path = Path(__file__).parent / "XGBoost_model_full.json"
+model_path = Path("/data/XGBoost_model_full.json") # Load from mounted persistent disk
 if not model_path.exists():
-    raise FileNotFoundError(f"Model file not found at {model_path}")
+    # Fallback for local development (assuming files are in ./backend)
+    local_fallback_path = Path(__file__).parent / "XGBoost_model_full.json"
+    if local_fallback_path.exists():
+        model_path = local_fallback_path
+    else:
+        raise FileNotFoundError(f"Model file not found at /data/XGBoost_model_full.json or {local_fallback_path}")
 xgb_model = xgb.Booster()
 xgb_model.load_model(str(model_path))
 
@@ -249,9 +254,23 @@ async def predict(data: PatientData):
                 treated_astig_input = data.corneal_astigmatism
                 # === End Modification ===
 
-                # Define paths to Ridge model files (relative to main.py)
-                ridge_model_path = Path(__file__).parent / "ridge_model.joblib"
-                ridge_components_path = Path(__file__).parent / "ridge_components.joblib"
+                # Define paths to Ridge model files (expecting them in /data/)
+                ridge_model_path = Path("/data/ridge_model.joblib")
+                ridge_components_path = Path("/data/ridge_components.joblib")
+
+                # Fallback for local development (assuming files are in ./backend)
+                if not ridge_model_path.exists():
+                    local_fallback_path = Path(__file__).parent / "ridge_model.joblib"
+                    if local_fallback_path.exists():
+                        ridge_model_path = local_fallback_path
+                    else:
+                        raise FileNotFoundError(f"Ridge model file not found at /data/ridge_model.joblib or {local_fallback_path}")
+                if not ridge_components_path.exists():
+                     local_fallback_path = Path(__file__).parent / "ridge_components.joblib"
+                     if local_fallback_path.exists():
+                         ridge_components_path = local_fallback_path
+                     else:
+                         raise FileNotFoundError(f"Ridge components file not found at /data/ridge_components.joblib or {local_fallback_path}")
 
                 # === Modified: Call Ridge prediction function ===
                 prediction = predict_arcuate_sweep_ridge(
