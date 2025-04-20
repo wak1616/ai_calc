@@ -25,7 +25,7 @@
             </li>
           </ul>
         </div>
-        <div class="text-body-1 mb-4">Unlike many traditional nomograms that primarily rely on astigmatism magnitude and possibly age, our models incorporate a richer set of patient data. Features such as laterality (OD/OS), white-to-white distance (WTW), and average keratometry (Mean K), in addition to age and astigmatism details (magnitude and axis), allow the models to learn more nuanced patterns and potentially provide more personalized predictions. The use of sophisticated algorithms like XGBoost further enables the deciphering of complex interactions between these features that simpler linear models might miss.</div>
+        <div class="text-body-1 mb-4">Unlike many traditional nomograms that primarily rely on astigmatism magnitude and possibly age, our models incorporate a richer set of patient data. Features such as laterality (OD/OS), white-to-white distance (WTW), and average keratometry (Mean K), in addition to age and astigmatism details (magnitude and axis), allow the models to learn more nuanced patterns and potentially provide more personalized predictions. The use of sophisticated algorithms like XGBoost further enables the deciphering of complex interactions between these features that simpler models might miss.</div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Model Assumptions</div>
         <div class="text-body-1 mb-4">The model was trained with the following assumptions:</div>
@@ -43,10 +43,10 @@
         <div class="text-h5 font-weight-medium mb-3 mt-5">Disclaimer</div>
         <v-alert
           type="warning"
-          class="mb-4 font-weight-bold disclaimer-alert"
+          class="mb-4 disclaimer-alert"
           elevation="2"
         >
-          THIS WEBSITE APPLICATION IS INTENDED FOR INVESTIGATIONAL PURPOSES ONLY. IT IS NOT APPROVED TO GUIDE SURGICAL CORRECTION OF ASTIGMATISM IN HUMANS.
+          This web application is intended for investigational purposes only. It is not approved to guide surgical correction of astigmatism in humans.
         </v-alert>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Contact</div>
@@ -81,8 +81,8 @@ const assumptions = [
 
 <style scoped>
 .disclaimer-alert {
-  background-color: #ffebee !important; /* Light red */
-  color: #f1470a !important;           
-  border-left: 6px solid #ffcdd2 !important; /* Light red border to match background */
+  background-color: #fff3e0 !important; /* Light orange */
+  color: #ef6c00 !important;           /* Dark orange text for contrast */
+  border-left: 6px solid #ffe0b2 !important; /* Slightly darker orange border */
 }
 </style>

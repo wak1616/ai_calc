@@ -4,10 +4,10 @@
       <v-col cols="12" md="10" lg="8">
         <v-alert
           type="warning"
-          class="mb-4 font-weight-bold disclaimer-alert"
+          class="mb-4 disclaimer-alert"
           elevation="2"
         >
-          THIS WEBSITE APPLICATION IS INTENDED FOR INVESTIGATIONAL PURPOSES ONLY. IT IS NOT APPROVED TO GUIDE SURGICAL CORRECTION OF ASTIGMATISM IN HUMANS.
+          This web application is intended for investigational purposes only. It is not approved to guide surgical correction of astigmatism in humans.
         </v-alert>
         
         <v-card-title class="text-h5 font-weight-medium primary white--text">
@@ -685,8 +685,8 @@ canvas {
 }
 
 .disclaimer-alert {
-  background-color: #ffebee !important; /* Light red */
-  color: #f1470a !important;           /* Dark red text for contrast */
-  border-left: 6px solid #ffcdd2 !important; /* Light red border to match background */
+  background-color: #fff3e0 !important; /* Light orange */
+  color: #ef6c00 !important;           /* Dark orange text for contrast */
+  border-left: 6px solid #ffe0b2 !important; /* Slightly darker orange border */
 }
 </style> 
