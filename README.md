@@ -1,14 +1,14 @@
 # Arcuate Incision Calculator
 
-A web application for calculating and visualizing arcuate incisions for astigmatism correction in cataract surgery.
+A web application for using machine learning models to calculate laser arcuate incisions for astigmatism correction in cataract surgery.
 
 ## Features
 
 - Patient data input validation (e.g., Corneal Astigmatism: 0.25-1.50 D)
-- AI-powered incision length prediction (using XGBoost or Monotonic Neural Network model)
+- AI-powered incision length prediction (using XGBoost or Ridge Regression model)
 - Visual representation of arcuate incisions
 - Support for both single and paired arcuates
-- Selectable prediction model (XGBoost or Monotonic Neural Network, XGBoost is default)
+- Selectable prediction model (XGBoost or Ridge Regression, XGBoost is default)
 
 
 ## Prerequisites
@@ -57,28 +57,37 @@ The application will be available at:
 
 ## Production Build
 
-To build for production:
+To build the frontend assets for production:
 
 ```sh
 npm run build
-python run.py
 ```
 
-The application will be served at http://localhost:8000
+To serve the application in a production-like environment (using the built frontend assets):
+
+```sh
+cd backend
+source venv/bin/activate # Or venv\Scripts\activate on Windows
+# Ensure your .env or environment variables are set for production if needed
+uvicorn main:app --host 0.0.0.0 --port 8000 # Use uvicorn directly, adjust host/port as needed
+cd ..
+```
+
+Note: For a true production deployment, consider using a process manager like Gunicorn or Supervisor behind a reverse proxy like Nginx.
 
 ## Model Information
 
-The application uses an XGBoost model (default) and optionally a PyTorch-based Monotonic Neural Network model for predictions. 
+The application uses an XGBoost model (default) and optionally a Scikit-learn Ridge Regression model for predictions.
 
 - The XGBoost model file `XGBoost_model_full.json` is included in this repository in the `backend/` directory.
-- **For the Monotonic Neural Network option:** You need to place the following files into the `backend/` directory:
-    - `model_weights.pth` (PyTorch model state dictionary)
-    - `model_components.joblib` (Scalers, label encoders, and feature orders)
+- **For the Ridge Regression option:** You need to place the following files into the `backend/` directory:
+    - `ridge_model.joblib` (Scikit-learn Ridge model)
+    - `ridge_components.joblib` (Scalers, label encoders, and feature orders)
 
-These files are required for the "Monotonic Neural Network" selection to function.
+These files are required for the "Ridge Regression" selection to function.
 
 ## Dependencies
 
-The backend requires Python packages listed in `backend/requirements.txt`, including `fastapi`, `xgboost`, `pandas`, `numpy`, `torch`, and `joblib`.
+The backend requires Python packages listed in `backend/requirements.txt`, including `fastapi`, `xgboost`, `pandas`, `numpy`, `scikit-learn`, and `joblib`.
 
 The frontend requires Node.js packages listed in `package.json`, including `vue` and `vuetify`.
