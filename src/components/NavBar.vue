@@ -218,7 +218,8 @@ const props = defineProps({
 const emit = defineEmits(['update:model'])
 
 // AI Model options
-const aiModels = ref(['XGBoost', 'Monotonic Neural Network'])
+const aiModels = ref(['XGBoost', 'Ridge Regression'])
+const selectedModel = ref(aiModels.value[0])
 
 // Determine the current route to apply active styling
 const route = useRoute()
