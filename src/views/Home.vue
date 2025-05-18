@@ -217,7 +217,7 @@
                     style="white-space: normal; line-height: 1.5;"
                   >
                     <div class="text-body-1">
-                      Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (≥ 1.25 WTR or ≥ 0.75 ATR). Consider a toric IOL as a more predictable alternative.
+                      Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (> 1.2 WTR or > 0.5 ATR). Consider using a toric IOL instead.
                     </div>
                   </v-alert>
                 </v-fade-transition>
@@ -398,7 +398,13 @@ const rules = {
 
 const showToricAlert = computed(() => {
   const astigmatism = Number(formData.corneal_astigmatism)
-  return astigmatism >= 0.75
+  const steepAxis = Number(formData.steep_axis)
+  
+  // Check if astigmatism is ATR (steep axis between 0-30° or 150-180°)
+  const isATR = (steepAxis >= 0 && steepAxis <= 30) || (steepAxis >= 150 && steepAxis <= 180)
+  
+  // Show toric alert for high astigmatism (≥ 0.75) or ATR astigmatism > 0.5
+  return astigmatism >= 0.75 || (isATR && astigmatism > 0.5)
 })
 
 // Add watcher for formData changes OR selectedModel prop changes
