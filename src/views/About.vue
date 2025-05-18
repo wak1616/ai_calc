@@ -11,21 +11,12 @@
         <div class="text-body-1 mb-4">Multiple published models nomograms exist to help guide surgeons on incision parameters (sweep length and axis). Links to some prior published nomograms are available in the "Other Resources" menu at the top of the webpage.</div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">The Model</div>
-        <div class="text-body-1 mb-4">The De Rojas AI Calc model has been developed using machine learning algorithms and has been trained and validated on hundreds FLACS cases perfromed by experienced surgeons.</div>
+        <div class="text-body-1 mb-4">The De Rojas AI Calc model has been developed using machine learning and has been trained and validated on hundreds of FLACS cases performed by experienced surgeons.</div>
         
-        <div class="text-h5 font-weight-medium mb-3 mt-5">About the machine learning models used:</div>
-        <div class="text-body-1 mb-4">This calculator offers predictions based on two distinct machine learning algorithms that can be toggled:</div>
-        <div class="text-body-1 mb-4">
-          <ul class="pl-4">
-            <li class="mb-2">
-              <strong>XGBoost (Extreme Gradient Boosting):</strong> A powerful algorithm known for its accuracy and efficiency. XGBoost builds multiple decision trees sequentially, where each new tree corrects errors made by the previous ones. This makes it adept at capturing complex, non-linear relationships between patient features and the required arcuate sweep.
-            </li>
-            <li class="mb-2">
-              <strong>Ridge Regression:</strong> A type of linear regression that includes a regularization term. This helps prevent overfitting, especially when dealing with multiple correlated features, by slightly biasing the model towards simpler solutions. It provides a robust and interpretable alternative to XGBoost.
-            </li>
-          </ul>
-        </div>
-        <div class="text-body-1 mb-4">Unlike many traditional nomograms that primarily rely on astigmatism magnitude and possibly age, our models incorporate a richer set of patient data. Features such as laterality (OD/OS), white-to-white distance (WTW), and average keratometry (Mean K), in addition to age and astigmatism details (magnitude and axis), allow the models to learn more nuanced patterns and potentially provide more personalized predictions. The use of sophisticated algorithms like XGBoost further enables the deciphering of complex interactions between these features that simpler models might miss.</div>
+        <div class="text-h5 font-weight-medium mb-3 mt-5">About the machine learning model:</div>
+        <div class="text-body-1 mb-4">This calculator uses XGBoost (Extreme Gradient Boosting), a powerful algorithm known for its accuracy and efficiency. XGBoost builds multiple decision trees sequentially, where each new tree corrects errors made by the previous ones. This makes it adept at capturing complex, non-linear relationships between patient features and the required arcuate sweep.</div>
+        
+        <div class="text-body-1 mb-4">Unlike many traditional nomograms that primarily rely on astigmatism magnitude and possibly age, our model incorporates a richer set of patient data. Features such as laterality (OD/OS), white-to-white distance (WTW), average keratometry (Mean K), axial length (AL), and prior LASIK status, in addition to age and astigmatism details (magnitude and axis), allow the model to learn more nuanced patterns and provide more personalized predictions. The use of XGBoost enables the deciphering of complex interactions between these features that simpler models might miss.</div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Model Assumptions</div>
         <div class="text-body-1 mb-4">The model was trained with the following assumptions:</div>

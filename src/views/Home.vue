@@ -153,6 +153,39 @@
                     </v-col>
                   </v-row>
 
+                  <!-- Row for AL and LASIK? -->
+                  <v-row justify="center">
+                    <v-col cols="12" sm="10" md="5">
+                      <v-text-field
+                        v-model="formData.AL"
+                        label="Axial Length (mm)"
+                        type="number"
+                        min="20.0"
+                        max="30.0"
+                        step="0.01"
+                        variant="outlined"
+                        color="primary"
+                        density="compact"
+                        :rules="[rules.required, value => (value >= 20 && value <= 30) || 'AL must be between 20 and 30 mm']"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" sm="10" md="5">
+                      <div class="d-flex align-center" style="gap: 16px;">
+                        <span class="text-body-1 text-medium-emphasis ml-4">Prior LASIK?</span>
+                        <v-select
+                          v-model="formData.LASIK"
+                          :items="['hyperopic', 'myopic', 'no']"
+                          label="Select"
+                          variant="outlined"
+                          color="primary"
+                          density="compact"
+                          :rules="[rules.required]"
+                          style="min-width: 120px;"
+                        ></v-select>
+                      </div>
+                    </v-col>
+                  </v-row>
+
                   <!-- Submit Button - Centered -->
                   <v-row justify="center">
                     <v-col cols="auto">
@@ -180,8 +213,12 @@
                     variant="tonal"
                     class="mt-4 no-print"
                     closable
+                    density="comfortable"
+                    style="white-space: normal; line-height: 1.5;"
                   >
-                    Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (>= 1.25 WTR or >= 0.75 ATR). Consider a toric IOL as a more predictable alternative.
+                    <div class="text-body-1">
+                      Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (≥ 1.25 WTR or ≥ 0.75 ATR). Consider a toric IOL as a more predictable alternative.
+                    </div>
                   </v-alert>
                 </v-fade-transition>
 
@@ -307,6 +344,8 @@ const formData = reactive({
   steep_axis: null,
   mean_k: null,
   WTW: null,
+  AL: null,
+  LASIK: 'no',
 })
 
 const finalData = ref(null)
@@ -445,7 +484,8 @@ const handleSubmit = async () => {
       steep_axis: parseFloat(formData.steep_axis),
       mean_k: parseFloat(formData.mean_k),
       WTW: parseFloat(formData.WTW),
-      model_choice: props.selectedModel
+      AL: formData.AL !== null ? parseFloat(formData.AL) : null,
+      LASIK: formData.LASIK
     };
     
     console.log(`Sending request to ${API_URL.value}/predict with data:`, dataToSend);

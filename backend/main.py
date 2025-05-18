@@ -8,8 +8,6 @@ import math
 from typing import Literal, Tuple          
 from pathlib import Path
 import json
-import joblib
-from sklearn.linear_model import Ridge
 
 app = FastAPI(title="AI Calculator", description="A simple API for calculating laser arcuate incisions using machine learning algorithms")
 
@@ -48,139 +46,6 @@ if not model_path.exists():
 xgb_model = xgb.Booster()
 xgb_model.load_model(str(model_path))
 
-# Define the Ridge prediction function
-def predict_arcuate_sweep_ridge(age, steep_axis_term, eye, wtw_iolmaster,
-                         meank_iolmaster: float,
-                         type,
-                         treated_astig,
-                         # Paths
-                         model_path: Path,
-                         components_path: Path) -> float:
-    """Predicts the arcuate sweep based on input features using the Ridge model.
-
-    Args:
-        age (int): Age of the patient.
-        steep_axis_term (float): Cosine of the patient's steep axis.
-        eye (Literal["OD", "OS"]): Eye of the patient.
-        wtw_iolmaster (float): WTW value of the patient.
-        meank_iolmaster (float): The mean K value.
-        type (Literal["none", "paired", "single"]): Type of arcuate incision.
-        treated_astig (float): Treated corneal astigmatism (used for 'monotonic features').
-        model_path (Path): Path to the Ridge model file (.joblib).
-        components_path (Path): Path to the model components file (.joblib).
-
-    Returns:
-        float: Predicted arcuate sweep value (non-negative).
-    """
-    
-    # Load model and components safely
-    if not model_path.exists():
-        raise FileNotFoundError(f"Ridge model file not found at {model_path}")
-    if not components_path.exists():
-        raise FileNotFoundError(f"Ridge components file not found at {components_path}")
-
-    # Load model and components
-    try:
-        model = joblib.load(model_path)
-        components = joblib.load(components_path)
-    except Exception as e:
-        raise IOError(f"Error loading model or components: {e}")
-        
-    # Extract components safely
-    try:
-        other_scaler = components['other_scaler']
-        monotonic_scaler = components['monotonic_scaler']
-        eye_le = components['eye_label_encoder'] 
-        type_le = components['type_label_encoder'] 
-        other_features_order = components['other_features_order']
-        monotonic_feature_order = components['monotonic_feature_order']
-    except KeyError as e:
-        raise ValueError(f"Missing component in {components_path}: {e}")
-
-    # --- Prepare Input Data --- 
-    # Create DataFrame for 'other' features based on components order
-    other_dict = {
-        'Age': age,
-        'Steep_axis_term': steep_axis_term,
-        'Eye': eye,
-        'WTW_IOLMaster': wtw_iolmaster,
-        'MeanK_IOLMaster': meank_iolmaster,
-        'Type': type
-    }
-    # Ensure all keys expected by other_features_order are present
-    if not all(key in other_dict for key in other_features_order):
-         missing_keys = set(other_features_order) - set(other_dict.keys())
-         raise ValueError(f"Missing required keys for 'other_features': {missing_keys}")
-         
-    other_data = pd.DataFrame([other_dict])[other_features_order] # Ensure order
-
-    # Apply label encoders (handle potential unseen values if necessary, although less likely with Literal)
-    try:
-        other_data['Eye'] = eye_le.transform(other_data['Eye'])
-        other_data['Type'] = type_le.transform(other_data['Type'])
-    except ValueError as e:
-        # Handle cases where input might somehow bypass Literal validation
-        problem_col = 'Eye' if 'Eye' in str(e) else 'Type'
-        le_classes = eye_le.classes_ if problem_col == 'Eye' else type_le.classes_
-        raise ValueError(f"Error transforming categorical feature '{problem_col}'. Input value not recognized. Ensure it's one of {list(le_classes)}. Original error: {e}")
-
-    # Scale 'other' features
-    try:
-        other_scaled = pd.DataFrame(
-            other_scaler.transform(other_data),
-            columns=other_features_order, 
-            index=other_data.index
-        )
-    except Exception as e:
-        raise RuntimeError(f"Error scaling 'other' features: {e}")
-
-    # --- Monotonic Features --- 
-    x_monotonic_input = treated_astig
-    # NOTE: x_min for log transform was implicitly handled during scaler fitting in final_ridge_model.py
-    # The monotonic_scaler *learned* the appropriate scaling based on log(x - x_min + 1)
-    # So we just need to apply the same transformations here before scaling.
-    log_input = x_monotonic_input + 1e-9 # Add epsilon for log safety, although x_min handling should make it >= 1
-
-    monotonic_features_dict = {
-        'constant': 1.0,
-        'linear': x_monotonic_input,
-        'logistic_shift_left_1': 1 / (1 + np.exp(-(x_monotonic_input+1))),      
-        'logistic_shift_left_0.5': 1 / (1 + np.exp(-(x_monotonic_input+0.5))),  
-        'logistic_center': 1 / (1 + np.exp(-x_monotonic_input)),                
-        # Use log(input + eps) directly. The scaler implicitly handles the 'x_min' shift during its fit.
-        'logarithmic': np.log(log_input), 
-        'logistic_shift_right_0.5': 1 / (1 + np.exp(-(x_monotonic_input-0.5))), 
-        'logistic_shift_right_1': 1 / (1 + np.exp(-(x_monotonic_input-1))),     
-        'logistic_shift_right_1.5': 1 / (1 + np.exp(-(x_monotonic_input-1.5))), 
-        'logistic_shift_left_1.5': 1 / (1 + np.exp(-(x_monotonic_input+1.5)))   
-    }
-    
-    try:
-        x_monotonic = pd.DataFrame([monotonic_features_dict])[monotonic_feature_order]
-    except KeyError as e:
-        raise ValueError(f"Mismatch between calculated monotonic features and expected order from components file. Missing key: {e}")
-
-    # Scale monotonic features
-    try:
-        monotonic_scaled = pd.DataFrame(
-            monotonic_scaler.transform(x_monotonic),
-            columns=monotonic_feature_order,
-            index=x_monotonic.index
-        )
-    except Exception as e:
-        raise RuntimeError(f"Error scaling 'monotonic' features: {e}")
-
-    # --- Combine Features & Predict --- 
-    X_combined = pd.concat([other_scaled, monotonic_scaled], axis=1)
-
-    # Make prediction
-    try:
-        prediction = model.predict(X_combined)[0] # Predict returns array, get first element
-        prediction = max(0.0, float(prediction))  # Ensure non-negative
-        return prediction
-    except Exception as e:
-        raise RuntimeError(f"Error during Ridge model prediction: {e}")
-
 class PatientData(BaseModel):
     ID: str
     DOS: str
@@ -190,7 +55,8 @@ class PatientData(BaseModel):
     steep_axis: float = Field(ge=0, le=180, description="Steep Axis must be between 0° and 180°")
     mean_k: float = Field(ge=30.00, le=50.00, description="Average K must be between 30.00 and 50.00 D")
     WTW: float = Field(ge=10.0, le=15.0, description="WTW must be between 10.0 and 15.0 mm")
-    model_choice: Literal["XGBoost", "Ridge Regression"]
+    AL: float = Field(ge=20.0, le=31.0, description="Axial Length must be between 20.0 and 31.0 mm")
+    LASIK: Literal["hyperopic", "myopic", "no"]
 
     model_config = {
         "json_schema_extra": {
@@ -203,7 +69,8 @@ class PatientData(BaseModel):
                 "steep_axis": 90,
                 "mean_k": 44.00,
                 "WTW": 12.0,
-                "model_choice": "Ridge Regression"
+                "AL": 24.5,
+                "LASIK": "no"
             }
         }
     }
@@ -232,67 +99,40 @@ async def predict(data: PatientData):
         # Prediction logic
         prediction = 0.0 # Default prediction
         if type != "none":
-            if data.model_choice == "XGBoost":
-                # XGBoost prediction
-                df = pd.DataFrame({
-                    'Age': [data.age],
-                    'Steep_axis_term': [steep_axis_term],
-                    'Eye': pd.Categorical([data.eye]),
-                    'WTW_IOLMaster': [data.WTW],
-                    'MeanK_IOLMaster': [data.mean_k],
-                    'Treated_astig': [data.corneal_astigmatism],
-                    'Treatment_astigmatism': [data.corneal_astigmatism],
-                    'Type': pd.Categorical([type])
-                })
-           
-                dmatrix = xgb.DMatrix(data=df, enable_categorical=True)
-                prediction = np.max(xgb_model.predict(dmatrix), 0)
-
-            elif data.model_choice == "Ridge Regression":
-                # PyTorch Prediction (SECTION REPLACED WITH RIDGE)
-                # === Use corneal_astigmatism directly based on training script simplification ===
-                treated_astig_input = data.corneal_astigmatism
-                # === End Modification ===
-
-                # Define paths to Ridge model files (expecting them in /data/)
-                ridge_model_path = Path("/data/ridge_model.joblib")
-                ridge_components_path = Path("/data/ridge_components.joblib")
-
-                # Fallback for local development (assuming files are in ./backend)
-                if not ridge_model_path.exists():
-                    local_fallback_path = Path(__file__).parent / "ridge_model.joblib"
-                    if local_fallback_path.exists():
-                        ridge_model_path = local_fallback_path
-                    else:
-                        raise FileNotFoundError(f"Ridge model file not found at /data/ridge_model.joblib or {local_fallback_path}")
-                if not ridge_components_path.exists():
-                     local_fallback_path = Path(__file__).parent / "ridge_components.joblib"
-                     if local_fallback_path.exists():
-                         ridge_components_path = local_fallback_path
-                     else:
-                         raise FileNotFoundError(f"Ridge components file not found at /data/ridge_components.joblib or {local_fallback_path}")
-
-                # === Modified: Call Ridge prediction function ===
-                prediction = predict_arcuate_sweep_ridge(
-                    age=data.age,
-                    steep_axis_term=steep_axis_term,
-                    eye=data.eye,
-                    wtw_iolmaster=data.WTW,
-                    meank_iolmaster=data.mean_k,
-                    type=type,
-                    treated_astig=treated_astig_input,
-                    # Paths
-                    model_path=ridge_model_path,
-                    components_path=ridge_components_path
-                )
-                # === End Modified ===
+            # XGBoost prediction
+            xgb_df = pd.DataFrame({
+                'Age': [data.age],
+                'Steep_axis_term': [steep_axis_term],
+                'WTW_IOLMaster': [data.WTW],
+                'MeanK_IOLMaster': [data.mean_k],
+                'Treated_astig': [data.corneal_astigmatism],
+                'Type': [type],
+                'AL': [data.AL],
+                'LASIK?': [data.LASIK],
+                'Eye': [data.eye]
+            })
+            
+            # Convert categorical columns to category type
+            categorical_columns = ['Type', 'LASIK?', 'Eye']
+            for col in categorical_columns:
+                xgb_df[col] = xgb_df[col].astype('category')
+            
+            # Create DMatrix with categorical features enabled
+            dmatrix = xgb.DMatrix(xgb_df, enable_categorical=True)
+            
+            # Get prediction
+            xgb_prediction = xgb_model.predict(dmatrix)[0]
+            prediction = xgb_prediction
+            
+            # Debug logging
+            print(f"XGBoost prediction input: {xgb_df.to_dict('records')[0]}")
+            print(f"XGBoost prediction output: {prediction}")
 
             # Divide prediction by 2 if type is paired BEFORE capping
             if type == "paired":
                 prediction /= 2
                 prediction = min(prediction, 50) 
                 prediction = round(prediction)
-
             else:
                 prediction = min(prediction, 50) 
                 prediction = round(prediction) # Round the prediction 

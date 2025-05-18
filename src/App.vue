@@ -3,16 +3,12 @@ import { ref } from 'vue'
 import NavBar from '@/components/NavBar.vue'
 
 // State for selected AI model
-const selectedModel = ref('XGBoost') // MODIFIED: Default to XGBoost
-
-const handleModelUpdate = (newModel) => {
-  selectedModel.value = newModel
-}
+const selectedModel = ref('XGBoost')
 </script>
 
 <template>
   <v-app>
-    <NavBar :selected-model="selectedModel" @update:model="handleModelUpdate" />
+    <NavBar :selected-model="selectedModel" />
     <v-main>
       <v-container class="pt-8 px-8" max-width="1280">
         <router-view :selected-model="selectedModel" />

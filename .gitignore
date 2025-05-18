@@ -77,5 +77,3 @@ ENV/
 
 # Sensitive Model Files (Do not commit)
 backend/XGBoost_model_full.json
-backend/ridge_model.joblib
-backend/ridge_components.joblib
