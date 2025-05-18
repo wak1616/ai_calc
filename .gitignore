@@ -77,3 +77,7 @@ ENV/
 
 # Sensitive Model Files (Do not commit)
 backend/XGBoost_model_full.json
+
+# Windows metadata files
+*:Zone.Identifier
+*Zone.Identifier
