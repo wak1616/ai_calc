@@ -108,12 +108,11 @@ async def predict(data: PatientData):
                 'Treated_astig': [data.corneal_astigmatism],
                 'Type': [type],
                 'AL': [data.AL],
-                'LASIK?': [data.LASIK],
-                'Eye': [data.eye]
+                'LASIK?': [data.LASIK]
             })
             
             # Convert categorical columns to category type
-            categorical_columns = ['Type', 'LASIK?', 'Eye']
+            categorical_columns = ['Type', 'LASIK?']
             for col in categorical_columns:
                 xgb_df[col] = xgb_df[col].astype('category')
             
