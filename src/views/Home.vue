@@ -166,7 +166,7 @@
                         variant="outlined"
                         color="primary"
                         density="compact"
-                        :rules="[rules.required, value => (value >= 20 && value <= 30) || 'AL must be between 20 and 30 mm']"
+                        :rules="[rules.required, value => (value >= 20 && value <= 30) || 'Valid range: 20-30 mm']"
                       ></v-text-field>
                     </v-col>
                     <v-col cols="12" sm="10" md="5">
@@ -376,23 +376,23 @@ const rules = {
   required: value => !!value || 'Required field',
   ageRange: value => {
     const num = Number(value)
-    return (num >= 21 && num <= 120) || 'Age must be between 21 and 120 years'
+    return (num >= 21 && num <= 120) || 'Valid range: 21-120 years'
   },
   cornealAstigmatismRange: value => {
     const num = Number(value)
-    return (num >= 0.25 && num <= 1.50) || 'Corneal Astigmatism must be between 0.25 and 1.50 D'
+    return (num >= 0.25 && num <= 1.50) || 'Valid range: 0.25-1.50 D'
   },
   steepAxisRange: value => {
     const num = Number(value)
-    return (num >= 0 && num <= 180) || 'Steep Axis must be between 0° and 180°'
+    return (num >= 0 && num <= 180) || 'Valid range: 0-180°'
   },
   meanKRange: value => {
     const num = Number(value)
-    return (num >= 30.00 && num <= 50.00) || 'Average K must be between 30.00 and 50.00 D'
+    return (num >= 30.00 && num <= 50.00) || 'Valid range: 30-50 D'
   },
   wtwRange: value => {
     const num = Number(value)
-    return (num >= 10.0 && num <= 15.0) || 'WTW must be between 10.0 and 15.0 mm'
+    return (num >= 10.0 && num <= 15.0) || 'Valid range: 10-15 mm'
   }
 }
 
