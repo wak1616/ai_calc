@@ -79,6 +79,18 @@ Note: For a true production deployment, consider using a process manager like Gu
 
 The application uses an XGBoost model (default) and optionally a Scikit-learn Ridge Regression model for predictions.
 
+The XGBoost model incorporates a comprehensive set of patient-specific data to deliver personalized arcuate incision recommendations. It analyzes critical features including:
+- Corneal astigmatism
+- Steep axis position
+- Eye laterality (OD/OS)
+- White-to-white distance (WTW)
+- Average keratometry (Mean K)
+- Axial length (AL)
+- Patient age
+- Prior LASIK history
+
+The model has been specifically designed with a monotonic constraint on the astigmatism feature, ensuring that as corneal astigmatism increases, the recommended arcuate incision length will never decrease. This constraint ensures clinical relevance and predictability in surgical planning.
+
 **Important:** For privacy and security, the model files (`XGBoost_smooth_model_latest.json`, `ridge_model.joblib`, `ridge_components.joblib`) are **not** included in this public repository and are listed in `.gitignore`.
 
 To run the application locally or deploy it, you need to obtain these files and place them in the `backend/` directory:
