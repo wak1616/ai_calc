@@ -3,7 +3,7 @@
     <v-row justify="center">
       <v-col cols="12" md="10" lg="8">
         <v-alert
-          type="warning"
+          type="info"
           class="mb-4 disclaimer-alert"
           elevation="2"
         >
@@ -217,7 +217,7 @@
                     style="white-space: normal; line-height: 1.5;"
                   >
                     <div class="text-body-1">
-                      Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (> 1.2 WTR or > 0.6 ATR). Consider using a toric IOL instead.
+                      Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (> 1.1 WTR or > 0.6 ATR). Consider using a toric IOL instead.
                     </div>
                   </v-alert>
                 </v-fade-transition>
@@ -319,7 +319,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, nextTick, watch, computed, defineProps } from 'vue'
+import { ref, reactive, onMounted, nextTick, watch, computed } from 'vue'
 import leftEyeTemplate from '@/assets/lefteyetemplate.jpg'
 import rightEyeTemplate from '@/assets/righteyetemplate.jpg'
 
@@ -401,15 +401,14 @@ const showToricAlert = computed(() => {
   const steepAxis = Number(formData.steep_axis)
   
   // Check if astigmatism is ATR (steep axis between 0-30° or 150-180°)
-  const isATR = (steepAxis >= 0 && steepAxis <= 30) || (steepAxis >= 150 && steepAxis <= 180)
+  const isATR =! (steepAxis >= 40 && steepAxis <= 140)
+  const isWTR = (steepAxis >= 40 && steepAxis <= 140)
   
-  // Check if astigmatism is WTR (steep axis between 60-120°)
-  const isWTR = (steepAxis >= 60 && steepAxis <= 120)
   
   // Show toric alert for:
   // - ATR astigmatism > 0.6D
-  // - WTR astigmatism > 1.2D
-  return (isATR && astigmatism > 0.6) || (isWTR && astigmatism > 1.2)
+  // - WTR astigmatism > 1.1D
+  return (isATR && astigmatism > 0.6) || (isWTR && astigmatism > 1.1)
 })
 
 // Add watcher for formData changes OR selectedModel prop changes
@@ -736,8 +735,8 @@ canvas {
 }
 
 .disclaimer-alert {
-  background-color: #fff3e0 !important; /* Light orange */
-  color: #ef6c00 !important;           /* Dark orange text for contrast */
-  border-left: 6px solid #ffe0b2 !important; /* Slightly darker orange border */
+  background-color: #e3f2fd !important; /* Light blue */
+  color: #1976d2 !important;           /* Dark blue text for contrast */
+  border-left: 6px solid #bbdefb !important; /* Medium blue border */
 }
 </style> 

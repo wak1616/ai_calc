@@ -76,7 +76,7 @@ ENV/
 .DS_Store
 
 # Sensitive Model Files (Do not commit)
-backend/XGBoost_model_full.json
+# Sensitive Model Files (Do not commit)
 
 # Windows metadata files
 *:Zone.Identifier

@@ -147,7 +147,7 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 // Define props received from App.vue

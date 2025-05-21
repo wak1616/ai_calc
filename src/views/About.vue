@@ -14,9 +14,11 @@
         <div class="text-body-1 mb-4">The De Rojas AI Calc model has been developed using machine learning and has been trained and validated on hundreds of FLACS cases performed by experienced surgeons.</div>
         
         <div class="text-h5 font-weight-medium mb-3 mt-5">About the machine learning model:</div>
-        <div class="text-body-1 mb-4">This calculator uses XGBoost (Extreme Gradient Boosting), a powerful algorithm known for its accuracy and efficiency. XGBoost builds multiple decision trees sequentially, where each new tree corrects errors made by the previous ones. This makes it adept at capturing complex, non-linear relationships between patient features and the required arcuate sweep.</div>
+        <div class="text-body-1 mb-4">This calculator uses Extreme Gradient Boosting, a powerful algorithm known for its accuracy and efficiency. XGBoost builds multiple decision trees sequentially, where each new tree corrects errors made by the previous ones. This makes it adept at capturing complex, non-linear relationships between patient features and the required arcuate sweep.</div>
         
         <div class="text-body-1 mb-4">Unlike many traditional nomograms that primarily rely on astigmatism magnitude and possibly age, our model incorporates a richer set of patient data. Features such as laterality (OD/OS), white-to-white distance (WTW), average keratometry (Mean K), axial length (AL), and prior LASIK status, in addition to age and astigmatism details (magnitude and axis), allow the model to learn more nuanced patterns and provide more personalized predictions. The use of XGBoost enables the deciphering of complex interactions between these features that simpler models might miss.</div>
+
+        <div class="text-body-1 mb-4">The model has been specifically designed with a monotonic constraint on the astigmatism feature. This means that as corneal astigmatism increases, the recommended arcuate incision length will never decrease. This constraint ensures clinical relevance and predictability in surgical planning, as it aligns with the fundamental principle that higher degrees of astigmatism generally require more aggressive correction.</div>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Model Assumptions</div>
         <div class="text-body-1 mb-4">The model was trained with the following assumptions:</div>
@@ -33,7 +35,7 @@
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Disclaimer</div>
         <v-alert
-          type="warning"
+          type="info"
           class="mb-4 disclaimer-alert"
           elevation="2"
         >
@@ -72,8 +74,8 @@ const assumptions = [
 
 <style scoped>
 .disclaimer-alert {
-  background-color: #fff3e0 !important; /* Light orange */
-  color: #ef6c00 !important;           /* Dark orange text for contrast */
-  border-left: 6px solid #ffe0b2 !important; /* Slightly darker orange border */
+  background-color: #e3f2fd !important; /* Light blue */
+  color: #1976d2 !important;           /* Dark blue text for contrast */
+  border-left: 6px solid #bbdefb !important; /* Medium blue border */
 }
 </style>

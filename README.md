@@ -79,12 +79,11 @@ Note: For a true production deployment, consider using a process manager like Gu
 
 The application uses an XGBoost model (default) and optionally a Scikit-learn Ridge Regression model for predictions.
 
-**Important:** For privacy and security, the model files (`XGBoost_model_full.json`, `ridge_model.joblib`, `ridge_components.joblib`) are **not** included in this public repository and are listed in `.gitignore`.
+**Important:** For privacy and security, the model files (`XGBoost_smooth_model_latest.json`, `ridge_model.joblib`, `ridge_components.joblib`) are **not** included in this public repository and are listed in `.gitignore`.
 
 To run the application locally or deploy it, you need to obtain these files and place them in the `backend/` directory:
-    - `XGBoost_model_full.json` (XGBoost model)
-    - `ridge_model.joblib` (Scikit-learn Ridge model)
-    - `ridge_components.joblib` (Scalers, label encoders, and feature orders)
+    - `XGBoost_smooth_model_latest.json` (XGBoost model)
+
 
 These files are required for the application predictions to function. For deployment (e.g., on Render), these files should be securely uploaded to the server environment (e.g., using Render Persistent Disks) rather than being committed to the repository.
 

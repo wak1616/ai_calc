@@ -35,14 +35,14 @@ app.add_middleware(
 )
 
 # Load the XGBoost model
-model_path = Path("/data/XGBoost_model_latest.json") # Load from mounted persistent disk
+model_path = Path("/data/XGBoost_smooth_model_latest.json") # Load from mounted persistent disk
 if not model_path.exists():
     # Fallback for local development (assuming files are in ./backend)
-    local_fallback_path = Path(__file__).parent / "XGBoost_model_latest.json"
+    local_fallback_path = Path(__file__).parent / "XGBoost_smooth_model_latest.json"
     if local_fallback_path.exists():
         model_path = local_fallback_path
     else:
-        raise FileNotFoundError(f"Model file not found at /data/XGBoost_model_latest.json or {local_fallback_path}")
+        raise FileNotFoundError(f"Model file not found at /data/XGBoost_smooth_model_latest.json or {local_fallback_path}")
 xgb_model = xgb.Booster()
 xgb_model.load_model(str(model_path))
 
@@ -108,8 +108,7 @@ async def predict(data: PatientData):
                 'Treated_astig': [data.corneal_astigmatism],
                 'Type': [type],
                 'AL': [data.AL],
-                'LASIK?': [data.LASIK],
-                'Age_x_Treated_astig': [data.age * data.corneal_astigmatism]  # Include the interaction term required by the model
+                'LASIK?': [data.LASIK]
             })
             
             # Convert categorical columns to category type

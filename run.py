@@ -17,7 +17,7 @@ def run_frontend():
 
 def run_backend(dev_mode=True):
     # Check if model exists in backend directory
-    model_file = "XGBoost_model_full.json"
+    model_file = "XGBoost_smooth_model_latest.json"
     backend_dir = Path("backend")
     backend_model_path = backend_dir / model_file
     
