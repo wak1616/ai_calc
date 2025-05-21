@@ -84,7 +84,6 @@ The XGBoost model incorporates a comprehensive set of patient-specific data to d
 - Steep axis position
 - Eye laterality (OD/OS)
 - White-to-white distance (WTW)
-- Average keratometry (Mean K)
 - Axial length (AL)
 - Patient age
 - Prior LASIK history

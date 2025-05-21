@@ -125,20 +125,6 @@
                   <v-row justify="center">
                     <v-col cols="12" sm="10" md="5">
                       <v-text-field
-                        v-model="formData.mean_k"
-                        label="Average K (D)"
-                        type="number"
-                        min="30.00"
-                        max="50.00"
-                        step="0.01"
-                        variant="outlined"
-                        color="primary" 
-                        density="compact" 
-                        :rules="[rules.required, rules.meanKRange]"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="10" md="5">
-                      <v-text-field
                         v-model="formData.WTW"
                         label="WTW (mm)"
                         type="number"
@@ -151,10 +137,6 @@
                         :rules="[rules.required, rules.wtwRange]"
                       ></v-text-field>
                     </v-col>
-                  </v-row>
-
-                  <!-- Row for AL and LASIK? -->
-                  <v-row justify="center">
                     <v-col cols="12" sm="10" md="5">
                       <v-text-field
                         v-model="formData.AL"
@@ -169,6 +151,10 @@
                         :rules="[rules.required, value => (value >= 20 && value <= 30) || 'Valid range: 20-30 mm']"
                       ></v-text-field>
                     </v-col>
+                  </v-row>
+
+                  <!-- Row for AL and LASIK? -->
+                  <v-row justify="center">
                     <v-col cols="12" sm="10" md="5">
                       <div class="d-flex align-center" style="gap: 16px;">
                         <span class="text-body-1 text-medium-emphasis ml-4">Prior LASIK?</span>
@@ -259,10 +245,10 @@
                         <td>{{ formData.steep_axis }}°</td>
                       </tr>
                       <tr>
-                        <td><strong>Average K:</strong></td>
-                        <td>{{ formData.mean_k }} D</td>
                         <td><strong>WTW:</strong></td>
                         <td>{{ formData.WTW }} mm</td>
+                        <td><strong>Axial Length:</strong></td>
+                        <td>{{ formData.AL }} mm</td>
                       </tr>
                     </tbody>
                   </table>
@@ -342,7 +328,6 @@ const formData = reactive({
   eye: '',
   corneal_astigmatism: null,
   steep_axis: null,
-  mean_k: null,
   WTW: null,
   AL: null,
   LASIK: 'no',
@@ -385,10 +370,6 @@ const rules = {
   steepAxisRange: value => {
     const num = Number(value)
     return (num >= 0 && num <= 180) || 'Valid range: 0-180°'
-  },
-  meanKRange: value => {
-    const num = Number(value)
-    return (num >= 30.00 && num <= 50.00) || 'Valid range: 30-50 D'
   },
   wtwRange: value => {
     const num = Number(value)
@@ -492,7 +473,6 @@ const handleSubmit = async () => {
       eye: formData.eye,
       corneal_astigmatism: parseFloat(formData.corneal_astigmatism),
       steep_axis: parseFloat(formData.steep_axis),
-      mean_k: parseFloat(formData.mean_k),
       WTW: parseFloat(formData.WTW),
       AL: formData.AL !== null ? parseFloat(formData.AL) : null,
       LASIK: formData.LASIK

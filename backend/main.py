@@ -53,7 +53,6 @@ class PatientData(BaseModel):
     eye: Literal["OD", "OS"]
     corneal_astigmatism: float = Field(ge=0.25, le=1.50, description="Corneal Astigmatism must be between 0.25 and 1.50 D")
     steep_axis: float = Field(ge=0, le=180, description="Steep Axis must be between 0° and 180°")
-    mean_k: float = Field(ge=30.00, le=50.00, description="Average K must be between 30.00 and 50.00 D")
     WTW: float = Field(ge=10.0, le=15.0, description="WTW must be between 10.0 and 15.0 mm")
     AL: float = Field(ge=20.0, le=31.0, description="Axial Length must be between 20.0 and 31.0 mm")
     LASIK: Literal["hyperopic", "myopic", "no"]
@@ -67,7 +66,6 @@ class PatientData(BaseModel):
                 "eye": "OD",
                 "corneal_astigmatism": 1.25,
                 "steep_axis": 90,
-                "mean_k": 44.00,
                 "WTW": 12.0,
                 "AL": 24.5,
                 "LASIK": "no"
@@ -104,7 +102,6 @@ async def predict(data: PatientData):
                 'Age': [data.age],
                 'Steep_axis_term': [steep_axis_term],
                 'WTW_IOLMaster': [data.WTW],
-                'MeanK_IOLMaster': [data.mean_k],
                 'Treated_astig': [data.corneal_astigmatism],
                 'Type': [type],
                 'AL': [data.AL],
