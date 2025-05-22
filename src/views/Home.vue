@@ -22,6 +22,20 @@
               v-model="formValid"
               class="no-print"
             >
+              <!-- Row for Patient Name -->
+              <v-row justify="center">
+                <v-col cols="12" sm="10" md="10">
+                  <v-text-field
+                    v-model="formData.name"
+                    label="Patient Name"
+                    variant="outlined"
+                    color="primary"
+                    density="compact" 
+                    :rules="[rules.required]"
+                  ></v-text-field>
+                </v-col>
+              </v-row>
+
               <!-- Row for ID and DOS -->
               <v-row justify="center">
                 <v-col cols="12" sm="10" md="5">
@@ -227,28 +241,34 @@
               <table class="patient-info-table">
                 <tbody>
                   <tr>
+                    <td><strong>Patient Name:</strong></td>
+                    <td>{{ formData.name }}</td>
                     <td><strong>Patient ID:</strong></td>
                     <td>{{ formData.ID }}</td>
+                  </tr>
+                  <tr>
                     <td><strong>Date of Surgery:</strong></td>
                     <td>{{ formData.DOS }}</td>
-                  </tr>
-                  <tr>
                     <td><strong>Age:</strong></td>
                     <td>{{ formData.age }} years</td>
+                  </tr>
+                  <tr>
                     <td><strong>Eye:</strong></td>
                     <td>{{ formData.eye === 'OD' ? 'Right' : 'Left' }}</td>
-                  </tr>
-                  <tr>
                     <td><strong>Corneal Astigmatism:</strong></td>
                     <td>{{ formData.corneal_astigmatism }} D</td>
-                    <td><strong>Steep Axis:</strong></td>
-                    <td>{{ formData.steep_axis }}°</td>
                   </tr>
                   <tr>
+                    <td><strong>Steep Axis:</strong></td>
+                    <td>{{ formData.steep_axis }}°</td>
                     <td><strong>WTW:</strong></td>
                     <td>{{ formData.WTW }} mm</td>
+                  </tr>
+                  <tr>
                     <td><strong>Axial Length:</strong></td>
                     <td>{{ formData.AL }} mm</td>
+                    <td></td>
+                    <td></td>
                   </tr>
                 </tbody>
               </table>
@@ -320,6 +340,7 @@ const errorMessage = ref('')
 const isLoading = ref(false)
 
 const formData = reactive({
+  name: '',
   ID: '',
   DOS: '',
   age: null,
