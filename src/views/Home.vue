@@ -238,7 +238,9 @@
             <!-- Print-only patient information -->
             <div class="print-only mt-4">
               <h2 class="text-h5 mb-4">Patient Information</h2>
-              <table class="patient-info-table">
+              
+              <!-- Standard layout for larger screens -->
+              <table class="patient-info-table standard-table">
                 <tbody>
                   <tr>
                     <td><strong>Patient Name:</strong></td>
@@ -269,6 +271,48 @@
                     <td>{{ formData.AL }} mm</td>
                     <td></td>
                     <td></td>
+                  </tr>
+                </tbody>
+              </table>
+              
+              <!-- Mobile-optimized single column layout -->
+              <table class="patient-info-table mobile-table">
+                <tbody>
+                  <tr>
+                    <td><strong>Patient Name:</strong></td>
+                    <td>{{ formData.name }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Patient ID:</strong></td>
+                    <td>{{ formData.ID }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Date of Surgery:</strong></td>
+                    <td>{{ formData.DOS }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Age:</strong></td>
+                    <td>{{ formData.age }} years</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Eye:</strong></td>
+                    <td>{{ formData.eye === 'OD' ? 'Right' : 'Left' }}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Corneal Astigmatism:</strong></td>
+                    <td>{{ formData.corneal_astigmatism }} D</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Steep Axis:</strong></td>
+                    <td>{{ formData.steep_axis }}°</td>
+                  </tr>
+                  <tr>
+                    <td><strong>WTW:</strong></td>
+                    <td>{{ formData.WTW }} mm</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Axial Length:</strong></td>
+                    <td>{{ formData.AL }} mm</td>
                   </tr>
                 </tbody>
               </table>
@@ -425,6 +469,10 @@ const drawArcuates = () => {
   const ctx = myCanvas.value.getContext('2d')
   if (!ctx) return
 
+  // Set responsive canvas dimensions for better print quality
+  const isMobile = window.innerWidth < 600
+  myCanvas.value.style.width = isMobile ? '100%' : '60%'
+  
   const img = new Image()
   img.src = formData.eye === 'OD' ? rightEyeTemplate : leftEyeTemplate
 
@@ -463,7 +511,10 @@ const drawArcuates = () => {
 }
 
 const printResults = () => {
-  window.print()
+  // Add a small delay to ensure canvas is properly sized
+  setTimeout(() => {
+    window.print()
+  }, 100)
 }
 
 const handleSubmit = async () => {
@@ -600,6 +651,27 @@ canvas {
     display: block !important;
   }
   
+  /* Show/hide appropriate tables based on screen size */
+  @media (max-width: 480px) {
+    .standard-table {
+      display: none !important;
+    }
+    
+    .mobile-table {
+      display: table !important;
+    }
+  }
+  
+  @media (min-width: 481px) {
+    .standard-table {
+      display: table !important;
+    }
+    
+    .mobile-table {
+      display: none !important;
+    }
+  }
+  
   /* Fixed page size to prevent unnecessary page breaks */
   @page {
     size: auto; /* Or try 'letter', 'A4' */
@@ -612,6 +684,7 @@ canvas {
     background-color: white;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    width: 100% !important;
   }
 
   .v-container {
@@ -635,6 +708,7 @@ canvas {
     border-radius: 12px !important; /* Slightly smaller radius */
     overflow: hidden !important;
     page-break-inside: avoid !important; /* Avoid break inside cards */
+    width: 100% !important;
   }
   
   .print-dark {
@@ -643,7 +717,7 @@ canvas {
   }
   
   canvas {
-    max-width: 60% !important; /* Slightly smaller width */
+    max-width: 100% !important; /* Full width on mobile */
     height: auto !important;
     max-height: 300px !important; /* Further reduced max height */
     width: auto !important;
@@ -689,10 +763,62 @@ canvas {
   .patient-info-table {
     margin-bottom: 10px !important;
     page-break-inside: avoid !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    font-size: 10pt !important;
   }
+  
   .patient-info-table td {
     padding: 4px 8px !important; /* Reduced padding */
-    font-size: 11pt !important; /* Slightly smaller font */
+    font-size: 10pt !important; /* Smaller font */
+    word-break: break-word !important;
+    vertical-align: top !important;
+  }
+  
+  /* Mobile-specific adjustments */
+  @media (max-width: 600px) {
+    .patient-info-table {
+      font-size: 8pt !important;
+      border-collapse: collapse !important;
+    }
+    
+    .patient-info-table td {
+      padding: 2px 3px !important;
+      font-size: 8pt !important;
+      line-height: 1.2 !important;
+    }
+    
+    canvas {
+      max-width: 100% !important;
+      max-height: 200px !important;
+    }
+    
+    .eye-label span {
+      font-size: 14px !important;
+    }
+    
+    /* Alternative single-column mobile layout */
+    @media (max-width: 480px) {
+      .patient-info-table tr td:nth-child(3),
+      .patient-info-table tr td:nth-child(4) {
+        display: none !important;
+      }
+      
+      .patient-info-table tr:nth-child(even) {
+        background-color: #f8f8f8 !important;
+      }
+      
+      .patient-info-table td {
+        width: 50% !important;
+      }
+      
+      /* Ensure the canvas is fully visible */
+      canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 180px !important;
+      }
+    }
   }
 }
 
@@ -737,5 +863,10 @@ canvas {
   background-color: #e3f2fd !important; /* Light blue */
   color: #1976d2 !important;           /* Dark blue text for contrast */
   border-left: 6px solid #bbdefb !important; /* Medium blue border */
+}
+
+/* Mobile table is hidden by default */
+.mobile-table {
+  display: none;
 }
 </style> 
