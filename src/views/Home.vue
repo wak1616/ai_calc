@@ -335,7 +335,9 @@
                   elevation="2"
                   rounded="lg"
                 >
-                  <canvas ref="myCanvas" width="1024" height="1024"></canvas>
+                  <div class="canvas-wrapper">
+                    <canvas ref="myCanvas" width="1024" height="1024"></canvas>
+                  </div>
                   <div class="text-center pa-2 eye-label">
                     <span class="text-h4 font-weight-bold">
                       {{ formData.eye === 'OD' ? 'RIGHT EYE' : 'LEFT EYE' }}
@@ -469,9 +471,20 @@ const drawArcuates = () => {
   const ctx = myCanvas.value.getContext('2d')
   if (!ctx) return
 
-  // Set responsive canvas dimensions for better print quality
+  // Set responsive canvas dimensions to maintain aspect ratio
   const isMobile = window.innerWidth < 600
-  myCanvas.value.style.width = isMobile ? '100%' : '60%'
+  
+  // Ensure canvas is square for correct aspect ratio
+  myCanvas.value.style.width = isMobile ? '100%' : '500px'
+  myCanvas.value.style.aspectRatio = '1 / 1'
+  
+  // Make sure internal dimensions remain square
+  const canvasSize = Math.min(1024, Math.max(window.innerWidth * 0.8, 300))
+  if (isMobile) {
+    // For mobile, set smaller internal dimensions while keeping aspect ratio
+    myCanvas.value.width = canvasSize
+    myCanvas.value.height = canvasSize
+  }
   
   const img = new Image()
   img.src = formData.eye === 'OD' ? rightEyeTemplate : leftEyeTemplate
@@ -480,7 +493,7 @@ const drawArcuates = () => {
     // Clear canvas
     ctx.clearRect(0, 0, myCanvas.value.width, myCanvas.value.height)
     
-    // Draw background image
+    // Draw background image - maintain aspect ratio
     ctx.drawImage(img, 0, 0, myCanvas.value.width, myCanvas.value.height)
 
     // Check if incisions are needed before drawing arcs
@@ -488,15 +501,18 @@ const drawArcuates = () => {
       return; // Don't draw arcs if none are needed
     }
 
-    // Draw arcuates
-    const radius = 360// Adjusted for 1024x1024 images
-    const center = { x: 512, y: 512 } // Center of 1024x1024 image for both eyes
+    // Calculate scaled radius to match canvas size
+    const radius = myCanvas.value.width * 0.35 // Scale radius proportionally to canvas size
+    const center = { 
+      x: myCanvas.value.width / 2, 
+      y: myCanvas.value.height / 2 
+    }
 
-    // Draw first arcuate
+    // Draw first arcuate with scaled dimensions
     ctx.beginPath()
     ctx.arc(center.x, center.y, radius, finalData.value.arc1start, finalData.value.arc1end)
     ctx.strokeStyle = ARCUATE_COLORS.first
-    ctx.lineWidth = 10
+    ctx.lineWidth = myCanvas.value.width * 0.01 // Scale line width with canvas
     ctx.stroke()
 
     // Draw second arcuate if it exists (paired arcuates)
@@ -504,17 +520,20 @@ const drawArcuates = () => {
       ctx.beginPath()
       ctx.arc(center.x, center.y, radius, finalData.value.arc2start, finalData.value.arc2end)
       ctx.strokeStyle = ARCUATE_COLORS.second
-      ctx.lineWidth = 10
+      ctx.lineWidth = myCanvas.value.width * 0.01 // Scale line width with canvas
       ctx.stroke()
     }
   }
 }
 
 const printResults = () => {
-  // Add a small delay to ensure canvas is properly sized
+  // Redraw canvas for printing to ensure correct aspect ratio
+  drawArcuates()
+  
+  // Add a small delay to ensure canvas is properly sized and rendered
   setTimeout(() => {
     window.print()
-  }, 100)
+  }, 200)
 }
 
 const handleSubmit = async () => {
@@ -625,13 +644,27 @@ onMounted(async () => {
   padding: 16px;
 }
 
+/* Canvas wrapper to maintain aspect ratio */
+.canvas-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 8px;
+}
+
+/* Ensure canvas maintains aspect ratio */
 canvas {
   width: 100%;
-  height: auto;
+  height: auto !important; /* Force auto height to maintain aspect ratio */
   background-color: white;
   display: block;
   margin: 0 auto;
   border-radius: 16px;
+  aspect-ratio: 1 / 1; /* Force 1:1 aspect ratio */
+  object-fit: contain; /* Ensure content is contained without stretching */
 }
 
 /* Add styling for the eye label */
@@ -716,16 +749,22 @@ canvas {
     color: white !important;
   }
   
+  .canvas-wrapper {
+    width: 100% !important;
+    max-width: 300px !important;
+    margin: 0 auto !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+  
   canvas {
-    max-width: 100% !important; /* Full width on mobile */
+    max-width: 100% !important;
     height: auto !important;
-    max-height: 300px !important; /* Further reduced max height */
-    width: auto !important;
-    margin: 0 auto;
+    aspect-ratio: 1 / 1 !important;
+    object-fit: contain !important;
+    margin: 0 auto !important;
     page-break-inside: avoid !important;
-    display: block;
-    border-radius: 12px !important; /* Match card radius */
-    overflow: hidden !important;
+    display: block !important;
+    border-radius: 12px !important;
   }
   
   /* Other print optimizations */
@@ -777,6 +816,16 @@ canvas {
   
   /* Mobile-specific adjustments */
   @media (max-width: 600px) {
+    .canvas-wrapper {
+      max-width: 200px !important;
+    }
+    
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+    }
+    
     .patient-info-table {
       font-size: 8pt !important;
       border-collapse: collapse !important;
@@ -786,11 +835,6 @@ canvas {
       padding: 2px 3px !important;
       font-size: 8pt !important;
       line-height: 1.2 !important;
-    }
-    
-    canvas {
-      max-width: 100% !important;
-      max-height: 200px !important;
     }
     
     .eye-label span {
