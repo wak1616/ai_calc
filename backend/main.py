@@ -85,7 +85,7 @@ async def predict(data: PatientData):
         # Calculate derived variables
         if data.corneal_astigmatism < 0.25:
             type = "none"
-        elif data.steep_axis >= 40 and data.steep_axis <= 140:
+        elif data.steep_axis >= 42 and data.steep_axis <= 138:
             # Consistent with training script's 'Type' column generation if arcuate is paired
             type = "paired"
         else:
@@ -147,8 +147,8 @@ async def predict(data: PatientData):
         # MODIFIED: Check prediction > 0 AFTER all calculations
         if type != "none" and prediction > 0:
             # Axis calculation logic remains the same
-            if (data.eye == "OD" and data.steep_axis > 140) or \
-               (data.eye == "OS" and data.steep_axis < 40): # Single ATR case
+            if (data.eye == "OD" and data.steep_axis > 138) or \
+               (data.eye == "OS" and data.steep_axis < 42): # Single ATR case
                  arc1axis = data.steep_axis + 180 if data.steep_axis < 180 else data.steep_axis - 180 # Ensure stays within 0-360 logic for arcuatestartend
                  arc1axis = arc1axis % 360 # Normalize axis
                  arc2axis = data.steep_axis # For potential display, not used in calculation for single
