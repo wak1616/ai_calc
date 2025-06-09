@@ -20,6 +20,9 @@
 
         <div class="text-body-1 mb-4">The model has been specifically designed with a monotonic constraint on the astigmatism feature. This means that as corneal astigmatism increases, the recommended arcuate incision length will never decrease. This constraint ensures clinical relevance and predictability in surgical planning, as it aligns with the fundamental principle that higher degrees of astigmatism generally require more aggressive correction.</div>
 
+        <div class="text-h5 font-weight-medium mb-3 mt-5">Version History</div>
+        <div class="text-body-1 mb-4">A stable version of this model was released in May 2025, incorporating the latest training data to enhance prediction accuracy. This version was trained on a dataset of 859 cases (N=859).</div>
+
         <div class="text-h5 font-weight-medium mb-3 mt-5">Model Assumptions</div>
         <div class="text-body-1 mb-4">The model was trained with the following assumptions:</div>
         <div class="text-body-1 mb-4">
