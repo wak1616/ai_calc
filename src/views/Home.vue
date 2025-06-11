@@ -269,8 +269,8 @@
                   <tr>
                     <td><strong>Axial Length:</strong></td>
                     <td>{{ formData.AL }} mm</td>
-                    <td></td>
-                    <td></td>
+                    <td><strong>Prior LASIK?:</strong></td>
+                    <td>{{ formData.LASIK === 'no' ? 'No' : (formData.LASIK === 'hyperopic' ? 'Hyperopic' : 'Myopic') }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -313,6 +313,10 @@
                   <tr>
                     <td><strong>Axial Length:</strong></td>
                     <td>{{ formData.AL }} mm</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Prior LASIK?:</strong></td>
+                    <td>{{ formData.LASIK === 'no' ? 'No' : (formData.LASIK === 'hyperopic' ? 'Hyperopic' : 'Myopic') }}</td>
                   </tr>
                 </tbody>
               </table>
