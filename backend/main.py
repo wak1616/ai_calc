@@ -51,7 +51,7 @@ class PatientData(BaseModel):
     DOS: str
     age: int = Field(ge=21, le=120, description="Age must be between 21 and 120 years")
     eye: Literal["OD", "OS"]
-    corneal_astigmatism: float = Field(ge=0.25, le=1.50, description="Corneal Astigmatism must be between 0.25 and 1.50 D")
+    corneal_astigmatism: float = Field(ge=0.25, le=1.25, description="Corneal Astigmatism must be between 0.25 and 1.50 D")
     steep_axis: float = Field(ge=0, le=180, description="Steep Axis must be between 0° and 180°")
     WTW: float = Field(ge=10.0, le=15.0, description="WTW must be between 10.0 and 15.0 mm")
     AL: float = Field(ge=20.0, le=31.0, description="Axial Length must be between 20.0 and 31.0 mm")

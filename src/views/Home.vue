@@ -7,7 +7,7 @@
           class="mb-4 disclaimer-alert"
           elevation="2"
         >
-          This web application is intended for investigational purposes only. It is not approved to guide surgical correction of astigmatism in humans.
+          This web application is intended for investigational purposes only.
         </v-alert>
         
         <div class="text-h6 font-weight-regular mb-4 text-medium-emphasis pl-4 no-print primary white--text pa-4">
@@ -111,7 +111,7 @@
                     label="Corneal Astigmatism (D)"
                     type="number"
                     min="0.25"
-                    max="1.50"
+                    max="1.25"
                     step="0.01"
                     variant="outlined"
                     color="primary"
@@ -217,7 +217,7 @@
                 style="white-space: normal; line-height: 1.5;"
               >
                 <div class="text-body-1">
-                  Large arcuate incisions are not the best option to correct higher levels of corneal astigmatism (> 1.1 WTR or > 0.6 ATR). Consider using a toric IOL instead.
+                  Large arcuate incisions are NOT the best option to correct higher levels of corneal astigmatism (defined as >= 0.6 ATR or >= 1.1 WTR). This model recommends using a TORIC IOL instead.
                 </div>
               </v-alert>
             </v-fade-transition>
@@ -269,8 +269,8 @@
                   <tr>
                     <td><strong>Axial Length:</strong></td>
                     <td>{{ formData.AL }} mm</td>
-                    <td></td>
-                    <td></td>
+                    <td><strong>Prior LASIK:</strong></td>
+                    <td>{{ formData.LASIK === 'no' ? 'No' : formData.LASIK === 'hyperopic' ? 'Hyperopic' : 'Myopic' }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -314,12 +314,16 @@
                     <td><strong>Axial Length:</strong></td>
                     <td>{{ formData.AL }} mm</td>
                   </tr>
+                  <tr>
+                    <td><strong>Prior LASIK:</strong></td>
+                    <td>{{ formData.LASIK === 'no' ? 'No' : formData.LASIK === 'hyperopic' ? 'Hyperopic' : 'Myopic' }}</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
 
             <v-fade-transition>
-              <div v-if="finalData" class="mt-8">
+              <div v-if="finalData" class="mt-8 print-compact">
                 <v-card
                   class="bg-grey-darken-3 mb-4 print-dark"
                   elevation="3"
@@ -344,6 +348,20 @@
                     </span>
                   </div>
                 </v-card>
+                
+                <!-- Print-only toric alert -->
+                <div v-if="showToricAlert" class="print-only mt-4">
+                  <v-alert
+                    type="warning"
+                    variant="tonal"
+                    density="comfortable"
+                    class="toric-print-alert"
+                  >
+                    <div class="text-body-1">
+                      Large arcuate incisions are NOT the best option to correct higher levels of corneal astigmatism (defined as >= 0.6 ATR or >= 1.1 WTR). This model recommends using a TORIC IOL instead.
+                    </div>
+                  </v-alert>
+                </div>
                 
                 <!-- Print button appears only after calculation -->
                 <v-row justify="center">
@@ -452,9 +470,9 @@ const showToricAlert = computed(() => {
   
   
   // Show toric alert for:
-  // - ATR astigmatism > 0.6D
-  // - WTR astigmatism > 1.1D
-  return (isATR && astigmatism > 0.6) || (isWTR && astigmatism > 1.1)
+  // - ATR astigmatism >= 0.6D
+  // - WTR astigmatism >= 1.1D
+  return (isATR && astigmatism >= 0.6) || (isWTR && astigmatism >= 1.1)
 })
 
 // Add watcher for formData changes OR selectedModel prop changes
@@ -708,7 +726,7 @@ canvas {
   /* Fixed page size to prevent unnecessary page breaks */
   @page {
     size: auto; /* Or try 'letter', 'A4' */
-    margin: 8mm; /* Reduced margin */
+    margin: 6mm; /* Further reduced margin */
   }
 
   body {
@@ -736,9 +754,9 @@ canvas {
   .v-card {
     box-shadow: none !important;
     border: 1px solid #eee;
-    margin-bottom: 10px !important; /* Reduced margin */
+    margin-bottom: 8px !important; /* Balanced margin */
     padding: 0 !important;
-    border-radius: 12px !important; /* Slightly smaller radius */
+    border-radius: 8px !important; /* Smaller radius */
     overflow: hidden !important;
     page-break-inside: avoid !important; /* Avoid break inside cards */
     width: 100% !important;
@@ -747,13 +765,25 @@ canvas {
   .print-dark {
     background-color: #333 !important;
     color: white !important;
+    padding: 8px !important; /* Reduced padding for arcuate text */
+  }
+  
+  .print-dark .v-card-text {
+    padding: 8px !important; /* Reduced padding */
+  }
+  
+  .print-dark .text-h6 {
+    font-size: 15px !important; /* Slightly larger font for arcuate text */
+    line-height: 1.3 !important;
+    margin-bottom: 3px !important;
   }
   
   .canvas-wrapper {
     width: 100% !important;
-    max-width: 300px !important;
+    max-width: 350px !important; /* Larger canvas for better visibility */
     margin: 0 auto !important;
     aspect-ratio: 1 / 1 !important;
+    padding: 6px !important; /* Slightly more padding */
   }
   
   canvas {
@@ -764,26 +794,26 @@ canvas {
     margin: 0 auto !important;
     page-break-inside: avoid !important;
     display: block !important;
-    border-radius: 12px !important;
+    border-radius: 8px !important;
   }
   
   /* Other print optimizations */
   .text-h4 {
-    font-size: 20px !important; /* Further reduced title */
-    margin-bottom: 6px !important;
+    font-size: 18px !important; /* Readable title size */
+    margin-bottom: 4px !important;
   }
   
   .eye-label {
-    margin-top: 4px !important;
-    padding: 5px 0 !important; /* Slightly smaller padding */
+    margin-top: 3px !important;
+    padding: 4px 0 !important; /* More breathing room */
     background-color: #f0f0f0 !important;
-    border-radius: 0 0 12px 12px !important; /* Match card radius */
+    border-radius: 0 0 8px 8px !important; /* Match card radius */
   }
   
   .eye-label span {
-    font-size: 20px !important; /* Match title size */
+    font-size: 18px !important; /* Larger, more readable title */
     font-weight: bold !important;
-    letter-spacing: 0.5px; /* Reduced spacing */
+    letter-spacing: 0.4px; /* Slightly more spacing */
   }
   
   /* Prevent page breaks */
@@ -800,18 +830,19 @@ canvas {
   
   /* Patient Info Table adjustments */
   .patient-info-table {
-    margin-bottom: 10px !important;
+    margin-bottom: 8px !important; /* Slightly more space */
     page-break-inside: avoid !important;
     width: 100% !important;
     table-layout: fixed !important;
-    font-size: 10pt !important;
+    font-size: 10pt !important; /* More readable font */
   }
   
   .patient-info-table td {
-    padding: 4px 8px !important; /* Reduced padding */
-    font-size: 10pt !important; /* Smaller font */
+    padding: 3px 6px !important; /* Slightly more padding */
+    font-size: 10pt !important; /* More readable font */
     word-break: break-word !important;
     vertical-align: top !important;
+    line-height: 1.3 !important;
   }
   
   /* Mobile-specific adjustments */
@@ -909,8 +940,48 @@ canvas {
   border-left: 6px solid #bbdefb !important; /* Medium blue border */
 }
 
-/* Mobile table is hidden by default */
+  /* Mobile table is hidden by default */
 .mobile-table {
   display: none;
+}
+
+/* Print-specific styles for toric alert */
+@media print {
+  .toric-print-alert {
+    background-color: #fff3cd !important;
+    border: 1px solid #ffc107 !important;
+    border-left: 4px solid #ff9800 !important;
+    border-radius: 6px !important;
+    padding: 8px 10px !important; /* More readable padding */
+    margin: 5px 0 !important; /* Slightly more margin */
+    page-break-inside: avoid !important;
+    box-shadow: none !important;
+  }
+  
+  .toric-print-alert .text-body-1 {
+    color: #856404 !important;
+    font-size: 10pt !important; /* More readable font */
+    line-height: 1.4 !important;
+    margin: 0 !important;
+    font-weight: 500 !important;
+  }
+  
+  /* Ensure toric alert fits on mobile print */
+  @media (max-width: 600px) {
+    .toric-print-alert {
+      padding: 4px 6px !important;
+      margin: 2px 0 !important;
+    }
+    
+    .toric-print-alert .text-body-1 {
+      font-size: 8pt !important;
+      line-height: 1.2 !important;
+    }
+  }
+  
+  /* Compact spacing for print results section */
+  .print-compact {
+    margin-top: 6px !important; /* Less compressed spacing */
+  }
 }
 </style> 

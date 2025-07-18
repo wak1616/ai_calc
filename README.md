@@ -90,7 +90,7 @@ The XGBoost model incorporates a comprehensive set of patient-specific data to d
 
 The model has been specifically designed with a monotonic constraint on the astigmatism feature, ensuring that as corneal astigmatism increases, the recommended arcuate incision length will never decrease. This constraint ensures clinical relevance and predictability in surgical planning.
 
-**Important:** For privacy and security, the model files (`XGBoost_smooth_model_latest.json`, `ridge_model.joblib`, `ridge_components.joblib`) are **not** included in this public repository and are listed in `.gitignore`.
+**Important:** For privacy and security, the model file (`XGBoost_smooth_model_latest.json`) is **not** included in this public repository and are listed in `.gitignore`.
 
 To run the application locally or deploy it, you need to obtain these files and place them in the `backend/` directory:
     - `XGBoost_smooth_model_latest.json` (XGBoost model)
