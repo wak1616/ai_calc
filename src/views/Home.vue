@@ -448,7 +448,7 @@ const rules = {
   },
   cornealAstigmatismRange: value => {
     const num = Number(value)
-    return (num >= 0.25 && num <= 1.50) || 'Valid range: 0.25-1.50 D'
+    return (num >= 0.25 && num <= 1.25) || 'Valid range: 0.25-1.25 D'
   },
   steepAxisRange: value => {
     const num = Number(value)
