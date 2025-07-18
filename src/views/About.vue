@@ -5,7 +5,7 @@
         <div class="text-h3 font-weight-medium mb-6">About De Rojas AI Calc</div>
 
         <div class="text-h5 font-weight-medium mb-3">Background</div>
-        <div class="text-body-1 mb-4"><strong>Arcuate incisions ("AIs")</strong>, also known as arcuate keratotomies, are used during cataract surgery to correct astigmatism. They are a powerful tool, but there is limited medical consensus on how to best employ them, how to create them (e.g., via femtosecond laser/"FLACS" or manually with diamond blades?), or how to fine-tune them for specific levels of astigmatism or patient characteristics.</div>
+        <div class="text-body-1 mb-4"><strong>Arcuate incisions ("AIs")</strong>, also known as <strong>arcuate keratotomies ("AKs")</strong>, are used during cataract surgery to correct astigmatism. They are a powerful tool, but there is limited medical consensus on how to best employ them, how to create them (e.g., via femtosecond laser/"FLACS" or manually with diamond blades?), or how to fine-tune them for specific levels of astigmatism or patient characteristics.</div>
         <div class="text-body-1 mb-4">The author has extensive experience using precisely-placed femtosecond laser-created AIs to improve visual outcomes for his patients.</div>
 
         <div class="text-body-1 mb-4">Multiple published models nomograms exist to help guide surgeons on incision parameters (sweep length and axis). Links to some prior published nomograms are available in the "Other Resources" menu at the top of the webpage.</div>
@@ -27,8 +27,7 @@
         <div class="text-body-1 mb-4">The model was trained with the following assumptions:</div>
         <div class="text-body-1 mb-4">
           <ul class="pl-4">
-            <li v-for="(item, i) in assumptions" :key="i" class="mb-2">
-              {{ item }}
+            <li v-for="(item, i) in assumptions" :key="i" class="mb-2" v-html="item">
             </li>
           </ul>
         </div>
@@ -57,6 +56,11 @@
           joaquin.derojas@gmail.com
           </v-btn>
         </div>
+
+        <div class="text-h5 font-weight-medium mb-3 mt-5">References</div>
+        <div class="text-body-2 mb-4">
+          <sup>1</sup> Visco DM, Bedi R, Packer M. Femtosecond laser-assisted arcuate keratotomy at the time of cataract surgery for the management of preexisting astigmatism [published correction appears in J Cataract Refract Surg. 2020 Apr;46(4):658. doi: 10.1097/j.jcrs.0000000000000155.]. J Cataract Refract Surg. 2019;45(12):1762-1769. doi:10.1016/j.jcrs.2019.08.002
+        </div>
       </v-col>
     </v-row>
   </v-container>
@@ -67,9 +71,8 @@ const assumptions = [
   'The ALLY® Robotic Cataract Laser System (LENSAR, Inc) is used to make laser arcuate keratotomies (AKs).',
   'AKs are made at 80% depth.',
   'AKs are made at 4.5mm radius from the visual center.',
-  'All AKs were opened and irrigated at the time of surgery with a BSS cannula.',
-  'We do not recommend treating very low levels of astigmatism (< 0.25 D) with AKs.',
-  'Maximum AK sweep have been capped at 50 degrees. Based on our analysis, we believe that higher levels of astigmatism should be treated with toric lenses over laser AKs.',
+  'All AKs were opened and irrigated at the time of surgery with a BSS cannula for consistency and maximal effect, and WE RECOMMEND OPENING ALL AKs WITH USE OF THIS CALCULATOR.<sup>1</sup>',
+  'Maximum AK sweep have been capped at 50 degrees. Based on our analysis, we believe that higher levels of astigmatism should be treated with toric lenses over laser AKs (>= 0.60 ATR or >= 1.1 WTR)',
   'The nomogram assumes a clear corneal temporal incision with a 2.4-2.8mm blade which can be assumed to create ~0.2 D of SIA at 180 deg. An "average" SIA has been captured by the weights during the machine learning process. Inputting a presumed SIA for an individual surgeon has not been shown to significantly improve results.',
   'The model treats low levels of anterior ATR astigmatism aggressively in order to mitigate the effects of posterior corneal astigmatism and known regression of treatment effect at these axes.',
   'The current iteration of this model was been trained using K readings and other measurements from the IOLMaster 700 (Zeiss Meditec).'
