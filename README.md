@@ -86,7 +86,6 @@ The XGBoost model incorporates a comprehensive set of patient-specific data to d
 - White-to-white distance (WTW)
 - Axial length (AL)
 - Patient age
-- Prior LASIK history
 
 The model has been specifically designed with a monotonic constraint on the astigmatism feature, ensuring that as corneal astigmatism increases, the recommended arcuate incision length will never decrease. This constraint ensures clinical relevance and predictability in surgical planning.
 

@@ -167,25 +167,6 @@
                 </v-col>
               </v-row>
 
-              <!-- Row for AL and LASIK? -->
-              <v-row justify="center">
-                <v-col cols="12" sm="10" md="5">
-                  <div class="d-flex align-center" style="gap: 16px;">
-                    <span class="text-body-1 text-medium-emphasis ml-4">Prior LASIK?</span>
-                    <v-select
-                      v-model="formData.LASIK"
-                      :items="['hyperopic', 'myopic', 'no']"
-                      label="Select"
-                      variant="outlined"
-                      color="primary"
-                      density="compact"
-                      :rules="[rules.required]"
-                      style="min-width: 120px;"
-                    ></v-select>
-                  </div>
-                </v-col>
-              </v-row>
-
               <!-- Submit Button - Centered -->
               <v-row justify="center">
                 <v-col cols="auto">
@@ -269,8 +250,8 @@
                   <tr>
                     <td><strong>Axial Length:</strong></td>
                     <td>{{ formData.AL }} mm</td>
-                    <td><strong>Prior LASIK?:</strong></td>
-                    <td>{{ formData.LASIK === 'no' ? 'No' : (formData.LASIK === 'hyperopic' ? 'Hyperopic' : 'Myopic') }}</td>
+                    <td></td>
+                    <td></td>
                   </tr>
                 </tbody>
               </table>
@@ -313,10 +294,6 @@
                   <tr>
                     <td><strong>Axial Length:</strong></td>
                     <td>{{ formData.AL }} mm</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Prior LASIK?:</strong></td>
-                    <td>{{ formData.LASIK === 'no' ? 'No' : (formData.LASIK === 'hyperopic' ? 'Hyperopic' : 'Myopic') }}</td>
                   </tr>
                 </tbody>
               </table>
