@@ -17,8 +17,12 @@ localhost_origins = [f"http://localhost:{port}" for port in range(8000, 8011)]
 frontend_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
 # Production origins
 prod_origins = [
-    "https://derojas.info", "http://derojas.info", 
-    "https://www.derojas.info", "http://www.derojas.info",
+    "https://aicalc.derojas.ai",
+    "https://derojas.ai",
+    "https://www.derojas.ai",
+    # keep these temporarily if you still use them
+    "https://derojas.info",
+    "https://www.derojas.info",
     # Vercel deployment domains
     "https://*.vercel.app"
 ]
