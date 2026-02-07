@@ -47,8 +47,8 @@ xgb_model = xgb.Booster()
 xgb_model.load_model(str(model_path))
 
 class PatientData(BaseModel):
-    ID: str
-    DOS: str
+    # HIPAA: No patient-identifying fields (Name, ID, DOS) are accepted server-side.
+    # Only de-identified clinical parameters needed for prediction.
     age: int = Field(ge=21, le=120, description="Age must be between 21 and 120 years")
     eye: Literal["OD", "OS"]
     corneal_astigmatism: float = Field(ge=0.25, le=1.25, description="Corneal Astigmatism must be between 0.25 and 1.50 D")
@@ -60,8 +60,6 @@ class PatientData(BaseModel):
     model_config = {
         "json_schema_extra": {
             "example": {
-                "ID": "12345",
-                "DOS": "2024-02-20",
                 "age": 65,
                 "eye": "OD",
                 "corneal_astigmatism": 1.25,
@@ -120,9 +118,7 @@ async def predict(data: PatientData):
             xgb_prediction = xgb_model.predict(dmatrix)[0]
             prediction = xgb_prediction
             
-            # Debug logging
-            print(f"XGBoost prediction input: {xgb_df.to_dict('records')[0]}")
-            print(f"XGBoost prediction output: {prediction}")
+            # HIPAA: No logging of patient input data or prediction values
 
             # Divide prediction by 2 if type is paired BEFORE capping
             if type == "paired":
@@ -182,24 +178,24 @@ async def predict(data: PatientData):
             'arc2end': arc2end
         }
     
-    except FileNotFoundError as e:
+    except FileNotFoundError:
          # Specific handling for model/component file issues
-         print(f"ERROR: Model or component file not found: {e}")
-         raise HTTPException(status_code=500, detail=f"Server configuration error: Required model file not found. Please contact support.")
-    except (ValueError, IOError, RuntimeError) as e:
-        # Handle errors originating from the prediction function (missing components, scaling issues, etc.)
-        print(f"ERROR in prediction pipeline: {e}")
-        # Avoid leaking detailed internal errors to the client
-        raise HTTPException(status_code=500, detail=f"Error processing prediction: {e}") 
+         # HIPAA: Log only error type, never input data
+         print("ERROR: Model or component file not found")
+         raise HTTPException(status_code=500, detail="Server configuration error: Required model file not found. Please contact support.")
+    except (ValueError, IOError, RuntimeError):
+        # Handle errors originating from the prediction pipeline
+        # HIPAA: Log only error type, never input data
+        print("ERROR in prediction pipeline")
+        raise HTTPException(status_code=500, detail="Error processing prediction. Please verify your inputs and try again.")
     except HTTPException:
         # Re-raise HTTPExceptions directly (e.g., from validation)
         raise
-    except Exception as e:
+    except Exception:
         # Catch any other unexpected errors
-        print(f"Unexpected ERROR during prediction: {e}")
-        import traceback
-        traceback.print_exc() # Log the full traceback for debugging
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
+        # HIPAA: Log only error type, never input data or stack traces
+        print("Unexpected ERROR during prediction")
+        raise HTTPException(status_code=500, detail="An unexpected error occurred. Please try again.")
 
 if __name__ == "__main__":
     import uvicorn

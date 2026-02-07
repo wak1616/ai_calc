@@ -7,7 +7,8 @@
           class="mb-4 disclaimer-alert"
           elevation="2"
         >
-          This web application is intended for investigational purposes only.
+          <div>This web application is intended for investigational purposes only.</div>
+          <div class="mt-1" style="font-size: 0.85em; opacity: 0.9;">All data entered into this calculator remains local to your browser and is not stored or transmitted.</div>
         </v-alert>
         
         <div class="text-h6 font-weight-regular mb-4 text-medium-emphasis pl-4 no-print primary white--text pa-4">
@@ -30,7 +31,8 @@
                     label="Patient Name"
                     variant="outlined"
                     color="primary"
-                    density="compact" 
+                    density="compact"
+                    autocomplete="off"
                     :rules="[rules.required]"
                   ></v-text-field>
                 </v-col>
@@ -44,7 +46,8 @@
                     label="Patient ID"
                     variant="outlined"
                     color="primary"
-                    density="compact" 
+                    density="compact"
+                    autocomplete="off"
                     :rules="[rules.required]"
                   ></v-text-field>
                 </v-col>
@@ -550,9 +553,9 @@ const handleSubmit = async () => {
     }
     
     // Prepare data with correct types
+    // HIPAA: Only send de-identified clinical parameters needed for prediction.
+    // Patient Name, ID, and DOS remain client-side only.
     const dataToSend = {
-      ID: formData.ID,
-      DOS: formData.DOS,
       age: parseInt(formData.age),
       eye: formData.eye,
       corneal_astigmatism: parseFloat(formData.corneal_astigmatism),
@@ -561,8 +564,6 @@ const handleSubmit = async () => {
       AL: formData.AL !== null ? parseFloat(formData.AL) : null,
       LASIK: formData.LASIK
     };
-    
-    console.log(`Sending request to ${API_URL.value}/predict with data:`, dataToSend);
     
     const response = await fetch(`${API_URL.value}/predict`, {
       method: 'POST',
@@ -591,7 +592,6 @@ const handleSubmit = async () => {
     await nextTick();
     drawArcuates();
   } catch (error) {
-    console.error('Error during prediction:', error);
     errorMessage.value = error.message || 'Error calculating arcuates. Please try again.';
     finalData.value = null; // Clear any previous results
   } finally {
@@ -611,12 +611,9 @@ onMounted(async () => {
   
   // Check API availability
   try {
-    const apiAvailable = await checkApiAvailability();
-    if (apiAvailable) {
-      console.log(`Backend API available at ${API_URL.value}`);
-    }
+    await checkApiAvailability();
   } catch (error) {
-    console.error('Error checking API availability:', error);
+    // API availability check failed silently
   }
 });
 </script>
