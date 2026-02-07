@@ -182,23 +182,20 @@ async def predict(data: PatientData):
             'arc2end': arc2end
         }
     
-    except FileNotFoundError:
-         # Specific handling for model/component file issues
-         # HIPAA: Log only error type, never input data
-         print("ERROR: Model or component file not found")
+    except FileNotFoundError as e:
+         # HIPAA-safe: log error type/message only (no patient data in these exceptions)
+         print(f"ERROR: Model or component file not found: {e}")
          raise HTTPException(status_code=500, detail="Server configuration error: Required model file not found. Please contact support.")
-    except (ValueError, IOError, RuntimeError):
-        # Handle errors originating from the prediction pipeline
-        # HIPAA: Log only error type, never input data
-        print("ERROR in prediction pipeline")
+    except (ValueError, IOError, RuntimeError) as e:
+        # HIPAA-safe: log error type/message only (no patient data in these exceptions)
+        print(f"ERROR in prediction pipeline: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail="Error processing prediction. Please verify your inputs and try again.")
     except HTTPException:
         # Re-raise HTTPExceptions directly (e.g., from validation)
         raise
-    except Exception:
-        # Catch any other unexpected errors
-        # HIPAA: Log only error type, never input data or stack traces
-        print("Unexpected ERROR during prediction")
+    except Exception as e:
+        # HIPAA-safe: log error type/message only (no patient data in these exceptions)
+        print(f"Unexpected ERROR during prediction: {type(e).__name__}: {e}")
         raise HTTPException(status_code=500, detail="An unexpected error occurred. Please try again.")
 
 if __name__ == "__main__":
