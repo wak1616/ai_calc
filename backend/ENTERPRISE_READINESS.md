@@ -4,7 +4,6 @@ This checklist is intended to help prepare the backend service for larger-compan
 
 ## 1) Security configuration (must-have)
 - Set strict `ALLOWED_ORIGINS` to only approved frontend domains.
-- Set strict `ALLOWED_HOSTS` to only approved API hostnames.
 - Keep `ALLOW_ORIGIN_REGEX` narrow, or disable broad preview-domain regex in production.
 - Keep `MAX_REQUEST_SIZE_BYTES` small (default 8 KB is appropriate for this API payload).
 - Keep HTTPS termination enabled at the edge/reverse proxy.
@@ -39,7 +38,6 @@ This checklist is intended to help prepare the backend service for larger-compan
 ## 6) Environment variables used by backend
 - `ALLOWED_ORIGINS`
 - `ALLOW_ORIGIN_REGEX`
-- `ALLOWED_HOSTS`
 - `MAX_REQUEST_SIZE_BYTES`
 - `SET_HSTS_HEADER`
 - `ENABLE_API_DOCS`

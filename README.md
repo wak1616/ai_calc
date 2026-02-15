@@ -105,7 +105,6 @@ These files are required for the application predictions to function. For deploy
 - For production deployments, configure backend allowlists via environment variables:
   - `ALLOWED_ORIGINS` (comma-separated full origins to permit for CORS)
   - `ALLOW_ORIGIN_REGEX` (optional regex for dynamic origins such as preview domains)
-  - `ALLOWED_HOSTS` (comma-separated host patterns for trusted host validation)
 - Prefer HTTPS-only ingress, strict firewall rules, and minimal logging retention for healthcare-adjacent workflows.
 
 ## Dependencies
