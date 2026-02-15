@@ -1,15 +1,35 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import xgboost as xgb
 import pandas as pd
 import numpy as np
 import math
-from typing import Literal, Tuple          
+from typing import Literal
 from pathlib import Path
-import json
+import os
+import logging
 
-app = FastAPI(title="AI Calculator", description="A simple API for calculating laser arcuate incisions using machine learning algorithms")
+logger = logging.getLogger("ai_calc.backend")
+
+
+def env_flag(name: str, default: str = "false") -> bool:
+    return os.getenv(name, default).strip().lower() in {"1", "true", "yes", "on"}
+
+
+enable_api_docs = env_flag("ENABLE_API_DOCS", "true")
+app = FastAPI(
+    title="AI Calculator",
+    description="A simple API for calculating laser arcuate incisions using machine learning algorithms",
+    docs_url="/docs" if enable_api_docs else None,
+    redoc_url="/redoc" if enable_api_docs else None,
+    openapi_url="/openapi.json" if enable_api_docs else None,
+)
+
+max_request_size_bytes = int(os.getenv("MAX_REQUEST_SIZE_BYTES", "8192"))
+set_hsts_header = env_flag("SET_HSTS_HEADER", "true")
 
 # Generate a list of localhost origins for ports 8000-8010
 localhost_origins = [f"http://localhost:{port}" for port in range(8000, 8011)]
@@ -20,26 +40,64 @@ prod_origins = [
     "https://aicalc.derojas.ai",
     "https://derojas.ai",
     "https://www.derojas.ai",
-    # keep these temporarily if you still use them
+    # Keep these if still in use.
     "https://derojas.info",
     "https://www.derojas.info",
-    # Vercel deployment domains
-    "https://*.vercel.app"
 ]
+
+env_origins = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()]
+allow_origin_regex = os.getenv("ALLOW_ORIGIN_REGEX", r"https?://(localhost:\d+|.*\.vercel\.app)")
+
+allowed_origins = [*prod_origins, *frontend_origins, *localhost_origins, *env_origins]
 
 # Add CORS middleware with all possible origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[*prod_origins, *frontend_origins, *localhost_origins],
-    allow_origin_regex=r"https?://(localhost:\d+|.*\.vercel\.app)",  # Updated regex to include vercel.app domains
+    allow_origins=allowed_origins,
+    allow_origin_regex=allow_origin_regex,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
 
+# Restrict Host headers. Override with ALLOWED_HOSTS (comma-separated) as needed.
+allowed_hosts = [
+    host.strip()
+    for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,.onrender.com,.derojas.ai,.vercel.app").split(",")
+    if host.strip()
+]
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
+
+
+@app.middleware("http")
+async def enforce_request_size_and_security_headers(request: Request, call_next):
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > max_request_size_bytes:
+        return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+
+    if content_length is None and request.method in {"POST", "PUT", "PATCH"}:
+        body = await request.body()
+        if len(body) > max_request_size_bytes:
+            return JSONResponse(status_code=413, content={"detail": "Request body too large"})
+
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Cache-Control"] = "no-store"
+    if set_hsts_header:
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
+
+
+@app.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
+
+
 # Load the XGBoost model
-model_path = Path("/data/XGBoost_smooth_model_latest.json") # Load from mounted persistent disk
+model_path = Path("/data/XGBoost_smooth_model_latest.json")  # Load from mounted persistent disk
 if not model_path.exists():
     # Fallback for local development (assuming files are in ./backend)
     local_fallback_path = Path(__file__).parent / "XGBoost_smooth_model_latest.json"
@@ -49,6 +107,7 @@ if not model_path.exists():
         raise FileNotFoundError(f"Model file not found at /data/XGBoost_smooth_model_latest.json or {local_fallback_path}")
 xgb_model = xgb.Booster()
 xgb_model.load_model(str(model_path))
+
 
 class PatientData(BaseModel):
     # HIPAA: No patient-identifying fields (Name, ID, DOS) are accepted server-side.
@@ -70,10 +129,11 @@ class PatientData(BaseModel):
                 "steep_axis": 90,
                 "WTW": 12.0,
                 "AL": 24.5,
-                "LASIK": "no"
+                "LASIK": "no",
             }
         }
     }
+
 
 def arcuatestartend(sweep: float, location: float) -> tuple[float, float]:
     location = 360 if location == 0 else 360 - location
@@ -81,123 +141,121 @@ def arcuatestartend(sweep: float, location: float) -> tuple[float, float]:
     arcend_deg = (location + sweep / 2) % 360
     return (math.radians(arcstart_deg), math.radians(arcend_deg))
 
+
 @app.post("/predict")
 async def predict(data: PatientData):
     try:
         # Calculate derived variables
         if data.corneal_astigmatism < 0.25:
-            type = "none"
-        elif data.steep_axis >= 40 and data.steep_axis <= 140:
+            incision_type = "none"
+        elif 40 <= data.steep_axis <= 140:
             # Consistent with training script's 'Type' column generation if arcuate is paired
-            type = "paired"
+            incision_type = "paired"
         else:
             # Consistent with training script's 'Type' column generation if arcuate is single
-            type = "single"
-            
+            incision_type = "single"
+
         steep_axis_term = np.cos(np.radians(data.steep_axis * 2))
 
         # Prediction logic
-        prediction = 0.0 # Default prediction
-        if type != "none":
+        prediction = 0.0  # Default prediction
+        if incision_type != "none":
             # XGBoost prediction
-            xgb_df = pd.DataFrame({
-                'Age': [data.age],
-                'Steep_axis_term': [steep_axis_term],
-                'WTW_IOLMaster': [data.WTW],
-                'Treated_astig': [data.corneal_astigmatism],
-                'Type': [type],
-                'AL': [data.AL],
-                'LASIK?': [data.LASIK]
-            })
-            
+            xgb_df = pd.DataFrame(
+                {
+                    "Age": [data.age],
+                    "Steep_axis_term": [steep_axis_term],
+                    "WTW_IOLMaster": [data.WTW],
+                    "Treated_astig": [data.corneal_astigmatism],
+                    "Type": [incision_type],
+                    "AL": [data.AL],
+                    "LASIK?": [data.LASIK],
+                }
+            )
+
             # Convert categorical columns to category type
-            categorical_columns = ['Type', 'LASIK?']
+            categorical_columns = ["Type", "LASIK?"]
             for col in categorical_columns:
-                xgb_df[col] = xgb_df[col].astype('category')
-            
+                xgb_df[col] = xgb_df[col].astype("category")
+
             # Create DMatrix with categorical features enabled
             dmatrix = xgb.DMatrix(xgb_df, enable_categorical=True)
-            
+
             # Get prediction
-            xgb_prediction = xgb_model.predict(dmatrix)[0]
-            prediction = xgb_prediction
-            
-            # HIPAA: No logging of patient input data or prediction values
+            prediction = xgb_model.predict(dmatrix)[0]
 
             # Divide prediction by 2 if type is paired BEFORE capping
-            if type == "paired":
+            if incision_type == "paired":
                 prediction /= 2
-                prediction = min(prediction, 50) 
+                prediction = min(prediction, 50)
                 prediction = round(prediction)
             else:
-                prediction = min(prediction, 50) 
-                prediction = round(prediction) # Round the prediction 
-
-        else:
-            # Type is "none", prediction remains 0
-            pass 
+                prediction = min(prediction, 50)
+                prediction = round(prediction)
 
         # Calculate arcuate positions - only if type is not 'none'
         # Initialize values assuming no incision
         arc1start, arc1end, arc2start, arc2end = 0.0, 0.0, 0.0, 0.0
         arc1axis, arc2axis = 0.0, 0.0
-        arcuate1text = "No arcuate incision needed" # Default text
+        arcuate1text = "No arcuate incision needed"
         arcuate2text = ""
 
         # MODIFIED: Check prediction > 0 AFTER all calculations
-        if type != "none" and prediction > 0:
+        if incision_type != "none" and prediction > 0:
             # Axis calculation logic remains the same
-            if (data.eye == "OD" and data.steep_axis > 140) or \
-               (data.eye == "OS" and data.steep_axis < 40): # Single ATR case
-                 arc1axis = data.steep_axis + 180 if data.steep_axis < 180 else data.steep_axis - 180 # Ensure stays within 0-360 logic for arcuatestartend
-                 arc1axis = arc1axis % 360 # Normalize axis
-                 arc2axis = data.steep_axis # For potential display, not used in calculation for single
-            else: # Includes paired and single WTR
+            if (data.eye == "OD" and data.steep_axis > 140) or (data.eye == "OS" and data.steep_axis < 40):
+                # Single ATR case
+                arc1axis = data.steep_axis + 180 if data.steep_axis < 180 else data.steep_axis - 180
+                arc1axis = arc1axis % 360
+                arc2axis = data.steep_axis
+            else:
+                # Includes paired and single WTR
                 arc1axis = data.steep_axis
-                arc2axis = (data.steep_axis + 180) % 360 # Normalize paired axis
+                arc2axis = (data.steep_axis + 180) % 360
 
             # Calculate start/end angles and generate text based on type
-            if type == "single":
-                 arc1start, arc1end = arcuatestartend(prediction, arc1axis)
-                 # Update text only if prediction > 0
-                 arc1axis_display = round(arc1axis)
-                 arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis_display:.0f}°"
-                 # arc2start, arc2end, arcuate2text remain default (0 or empty)
-            elif type == "paired":
-                 arc1start, arc1end = arcuatestartend(prediction, arc1axis)
-                 arc2start, arc2end = arcuatestartend(prediction, arc2axis)
-                 # Update text only if prediction > 0
-                 arc1axis_display = round(arc1axis)
-                 arc2axis_display = round(arc2axis)
-                 arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis_display:.0f}°"
-                 arcuate2text = f"Arcuate 2: {prediction:.0f} degree sweep @ {arc2axis_display:.0f}°"
+            if incision_type == "single":
+                arc1start, arc1end = arcuatestartend(prediction, arc1axis)
+                arc1axis_display = round(arc1axis)
+                arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis_display:.0f}°"
+            elif incision_type == "paired":
+                arc1start, arc1end = arcuatestartend(prediction, arc1axis)
+                arc2start, arc2end = arcuatestartend(prediction, arc2axis)
+                arc1axis_display = round(arc1axis)
+                arc2axis_display = round(arc2axis)
+                arcuate1text = f"Arcuate 1: {prediction:.0f} degree sweep @ {arc1axis_display:.0f}°"
+                arcuate2text = f"Arcuate 2: {prediction:.0f} degree sweep @ {arc2axis_display:.0f}°"
 
-        # Ensure JSON serializability (arc angles are already floats)
         return {
-            'arcuate1text': arcuate1text,
-            'arcuate2text': arcuate2text,
-            'arc1start': arc1start,
-            'arc1end': arc1end,
-            'arc2start': arc2start,
-            'arc2end': arc2end
+            "arcuate1text": arcuate1text,
+            "arcuate2text": arcuate2text,
+            "arc1start": arc1start,
+            "arc1end": arc1end,
+            "arc2start": arc2start,
+            "arc2end": arc2end,
         }
-    
-    except FileNotFoundError as e:
-         # HIPAA-safe: log error type/message only (no patient data in these exceptions)
-         print(f"ERROR: Model or component file not found: {e}")
-         raise HTTPException(status_code=500, detail="Server configuration error: Required model file not found. Please contact support.")
-    except (ValueError, IOError, RuntimeError) as e:
-        # HIPAA-safe: log error type/message only (no patient data in these exceptions)
-        print(f"ERROR in prediction pipeline: {type(e).__name__}: {e}")
+
+    except FileNotFoundError:
+        # HIPAA-safe: avoid request payload logging.
+        logger.exception("Model or component file not found")
+        raise HTTPException(
+            status_code=500,
+            detail="Server configuration error: Required model file not found. Please contact support.",
+        )
+    except (ValueError, IOError, RuntimeError):
+        # HIPAA-safe: avoid request payload logging.
+        logger.exception("Error in prediction pipeline")
         raise HTTPException(status_code=500, detail="Error processing prediction. Please verify your inputs and try again.")
     except HTTPException:
         # Re-raise HTTPExceptions directly (e.g., from validation)
         raise
-    except Exception as e:
-        # HIPAA-safe: log error type/message only (no patient data in these exceptions)
-        print(f"Unexpected ERROR during prediction: {type(e).__name__}: {e}")
+    except Exception:
+        # HIPAA-safe: avoid request payload logging.
+        logger.exception("Unexpected error during prediction")
         raise HTTPException(status_code=500, detail="An unexpected error occurred. Please try again.")
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

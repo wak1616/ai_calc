@@ -97,6 +97,17 @@ To run the application locally or deploy it, you need to obtain these files and 
 
 These files are required for the application predictions to function. For deployment (e.g., on Render), these files should be securely uploaded to the server environment (e.g., using Render Persistent Disks) rather than being committed to the repository.
 
+
+## Security and Privacy Deployment Notes
+
+- Enterprise readiness checklist for backend licensing/due diligence: `backend/ENTERPRISE_READINESS.md`.
+- The frontend sends only de-identified clinical parameters to the backend prediction API (`age`, `eye`, `corneal_astigmatism`, `steep_axis`, `WTW`, `AL`, `LASIK`). Patient name/ID/date fields are not sent by this codebase.
+- For production deployments, configure backend allowlists via environment variables:
+  - `ALLOWED_ORIGINS` (comma-separated full origins to permit for CORS)
+  - `ALLOW_ORIGIN_REGEX` (optional regex for dynamic origins such as preview domains)
+  - `ALLOWED_HOSTS` (comma-separated host patterns for trusted host validation)
+- Prefer HTTPS-only ingress, strict firewall rules, and minimal logging retention for healthcare-adjacent workflows.
+
 ## Dependencies
 
 The backend requires Python packages listed in `backend/requirements.txt`, including `fastapi`, `xgboost`, `pandas`, `numpy`, `scikit-learn`, and `joblib`.
