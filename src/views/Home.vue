@@ -419,15 +419,14 @@ const normalizeApiUrl = (url) => {
 const configuredApiUrl = normalizeApiUrl(import.meta.env.VITE_API_URL || '')
 const localDefaultApiUrl = 'http://localhost:8000'
 const sameOriginApiUrl = normalizeApiUrl(window.location.origin)
+const isLocalFrontend = ['localhost', '127.0.0.1'].includes(window.location.hostname)
 
-// Preferred order: explicitly configured URL, same-origin fallback, localhost for dev.
-const API_CANDIDATES = [
-  configuredApiUrl,
-  sameOriginApiUrl,
-  localDefaultApiUrl
-].filter((url, index, arr) => url && arr.indexOf(url) === index)
-
-const getApiUrl = () => API_CANDIDATES[0] || ''
+// In production, prefer explicit configuration. In local dev, use fallbacks.
+const API_CANDIDATES = configuredApiUrl
+  ? [configuredApiUrl]
+  : isLocalFrontend
+    ? [sameOriginApiUrl, localDefaultApiUrl].filter((url, index, arr) => url && arr.indexOf(url) === index)
+    : [sameOriginApiUrl].filter((url, index, arr) => url && arr.indexOf(url) === index)
 
 const tryPredictAcrossCandidates = async (payload) => {
   let lastError = null
@@ -619,6 +618,8 @@ const handleSubmit = async () => {
     const rawMessage = error?.message || 'Error calculating arcuates. Please try again.'
     if (rawMessage.toLowerCase().includes('failed to fetch')) {
       errorMessage.value = `Unable to reach prediction API. Tried: ${API_CANDIDATES.join(', ') || 'not configured'}. Verify VITE_API_URL, backend availability, HTTPS, and CORS/host allowlist settings.`
+    } else if (!configuredApiUrl && !isLocalFrontend && rawMessage.includes('Status: 404')) {
+      errorMessage.value = `Prediction API not configured for this deployment. Set VITE_API_URL to your backend URL (for example your Render API URL).`
     } else {
       errorMessage.value = rawMessage
     }
