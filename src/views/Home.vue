@@ -8,7 +8,7 @@
           elevation="2"
         >
           <div>This web application is intended for investigational purposes only.</div>
-          <div class="mt-1" style="font-size: 0.85em; opacity: 0.9;">All data entered into this calculator remains local to your browser and is not stored or transmitted.</div>
+          <div class="mt-1" style="font-size: 0.85em; opacity: 0.9;">Patient name/ID/date fields remain in your browser only. De-identified clinical parameters needed for calculation are transmitted to the prediction API and are not intentionally stored by this app.</div>
         </v-alert>
         
         <div class="text-h6 font-weight-regular mb-4 text-medium-emphasis pl-4 no-print primary white--text pa-4">
@@ -404,21 +404,66 @@ const ARCUATE_COLORS = {
   second: '#FFA500'  // Orange
 }
 
-// Use environment variable for API connection with fallback
-const API_URL = ref(import.meta.env.VITE_API_URL || 'http://localhost:8000');
+const normalizeApiUrl = (url) => {
+  if (!url) return ''
+  const trimmed = url.trim().replace(/\/$/, '')
 
-// Function to check if API is available (for user feedback)
-const checkApiAvailability = async () => {
-  try {
-    const response = await fetch(`${API_URL.value}/docs`, { 
-      method: 'HEAD',
-      mode: 'no-cors' // Just to check if server responds
-    });
-    return true;
-  } catch (error) {
-    return false;
+  // Avoid mixed-content failures when frontend runs on HTTPS.
+  if (window.location.protocol === 'https:' && trimmed.startsWith('http://')) {
+    return `https://${trimmed.slice('http://'.length)}`
   }
-};
+
+  return trimmed
+}
+
+const configuredApiUrl = normalizeApiUrl(import.meta.env.VITE_API_URL || '')
+const localDefaultApiUrl = 'http://localhost:8000'
+const sameOriginApiUrl = normalizeApiUrl(window.location.origin)
+const isLocalFrontend = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+
+// In production, prefer explicit configuration. In local dev, use fallbacks.
+const API_CANDIDATES = configuredApiUrl
+  ? [configuredApiUrl]
+  : isLocalFrontend
+    ? [sameOriginApiUrl, localDefaultApiUrl].filter((url, index, arr) => url && arr.indexOf(url) === index)
+    : [sameOriginApiUrl].filter((url, index, arr) => url && arr.indexOf(url) === index)
+
+const tryPredictAcrossCandidates = async (payload) => {
+  let lastError = null
+
+  for (const baseUrl of API_CANDIDATES) {
+    try {
+      const response = await fetch(`${baseUrl}/predict`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'omit',
+        body: JSON.stringify(payload)
+      })
+
+      if (!response.ok) {
+        let errorText = `HTTP error! Status: ${response.status}`
+        try {
+          const errorData = await response.json()
+          errorText = errorData.detail || errorText
+        } catch (e) {
+          errorText = `Error ${response.status}: ${response.statusText}`
+        }
+        throw new Error(errorText)
+      }
+
+      const data = await response.json()
+      return { data, baseUrl }
+    } catch (error) {
+      lastError = error
+      // continue trying next candidate
+    }
+  }
+
+  throw lastError || new Error('Unable to reach prediction API')
+}
 
 const rules = {
   required: value => !!value || 'Required field',
@@ -546,12 +591,8 @@ const handleSubmit = async () => {
     isLoading.value = true;
     errorMessage.value = '';
     
-    // Check API availability
-    const apiAvailable = await checkApiAvailability();
-    if (!apiAvailable) {
-      throw new Error('API not available. Please try again later.');
-    }
-    
+    // Resolve the best API target (configured URL first, then fallbacks).
+
     // Prepare data with correct types
     // HIPAA: Only send de-identified clinical parameters needed for prediction.
     // Patient Name, ID, and DOS remain client-side only.
@@ -565,34 +606,23 @@ const handleSubmit = async () => {
       LASIK: formData.LASIK
     };
     
-    const response = await fetch(`${API_URL.value}/predict`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      credentials: 'omit', // Don't send credentials for cross-origin requests
-      body: JSON.stringify(dataToSend)
-    });
-
-    if (!response.ok) {
-      let errorText = `HTTP error! Status: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorText = errorData.detail || errorText;
-      } catch (e) {
-        // If JSON parsing fails, use the status text
-        errorText = `Error ${response.status}: ${response.statusText}`;
-      }
-      throw new Error(errorText);
+    if (API_CANDIDATES.length === 0) {
+      throw new Error('Prediction API URL is not configured. Set VITE_API_URL in your frontend deployment settings.')
     }
 
-    const fetchedData = await response.json();
-    finalData.value = fetchedData;
+    const { data: fetchedData } = await tryPredictAcrossCandidates(dataToSend)
+    finalData.value = fetchedData
     await nextTick();
     drawArcuates();
   } catch (error) {
-    errorMessage.value = error.message || 'Error calculating arcuates. Please try again.';
+    const rawMessage = error?.message || 'Error calculating arcuates. Please try again.'
+    if (rawMessage.toLowerCase().includes('failed to fetch')) {
+      errorMessage.value = `Unable to reach prediction API. Tried: ${API_CANDIDATES.join(', ') || 'not configured'}. Verify VITE_API_URL, backend availability, HTTPS, and CORS/host allowlist settings.`
+    } else if (!configuredApiUrl && !isLocalFrontend && rawMessage.includes('Status: 404')) {
+      errorMessage.value = `Prediction API not configured for this deployment. Set VITE_API_URL to your backend URL (for example your Render API URL).`
+    } else {
+      errorMessage.value = rawMessage
+    }
     finalData.value = null; // Clear any previous results
   } finally {
     // Hide loading state when done (success or error)
@@ -609,12 +639,6 @@ onMounted(async () => {
   rightImg.src = rightEyeTemplate
   leftImg.src = leftEyeTemplate
   
-  // Check API availability
-  try {
-    await checkApiAvailability();
-  } catch (error) {
-    // API availability check failed silently
-  }
 });
 </script>
 
