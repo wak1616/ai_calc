@@ -8,7 +8,7 @@
           elevation="2"
         >
           <div>This web application is intended for investigational purposes only.</div>
-          <div class="mt-1" style="font-size: 0.85em; opacity: 0.9;">All data entered into this calculator remains local to your browser and is not stored or transmitted.</div>
+          <div class="mt-1" style="font-size: 0.85em; opacity: 0.9;">Patient name/ID/date fields remain in your browser only. De-identified clinical parameters needed for calculation are transmitted to the prediction API and are not intentionally stored by this app.</div>
         </v-alert>
         
         <div class="text-h6 font-weight-regular mb-4 text-medium-emphasis pl-4 no-print primary white--text pa-4">
