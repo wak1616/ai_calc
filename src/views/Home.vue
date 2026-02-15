@@ -429,23 +429,41 @@ const API_CANDIDATES = [
 
 const getApiUrl = () => API_CANDIDATES[0] || ''
 
-// Function to check if API is available (for user feedback)
-const checkApiAvailability = async () => {
+const tryPredictAcrossCandidates = async (payload) => {
+  let lastError = null
+
   for (const baseUrl of API_CANDIDATES) {
     try {
-      const response = await fetch(`${baseUrl}/healthz`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' },
-        credentials: 'omit'
+      const response = await fetch(`${baseUrl}/predict`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'omit',
+        body: JSON.stringify(payload)
       })
 
-      if (response.ok) return { ok: true, baseUrl }
+      if (!response.ok) {
+        let errorText = `HTTP error! Status: ${response.status}`
+        try {
+          const errorData = await response.json()
+          errorText = errorData.detail || errorText
+        } catch (e) {
+          errorText = `Error ${response.status}: ${response.statusText}`
+        }
+        throw new Error(errorText)
+      }
+
+      const data = await response.json()
+      return { data, baseUrl }
     } catch (error) {
-      // try next candidate
+      lastError = error
+      // continue trying next candidate
     }
   }
 
-  return { ok: false, baseUrl: getApiUrl() }
+  throw lastError || new Error('Unable to reach prediction API')
 }
 
 const rules = {
@@ -589,43 +607,18 @@ const handleSubmit = async () => {
       LASIK: formData.LASIK
     };
     
-    const availability = await checkApiAvailability()
-    const activeApiBase = availability.baseUrl || getApiUrl()
-
-    if (!activeApiBase) {
+    if (API_CANDIDATES.length === 0) {
       throw new Error('Prediction API URL is not configured. Set VITE_API_URL in your frontend deployment settings.')
     }
 
-    const response = await fetch(`${activeApiBase}/predict`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      credentials: 'omit', // Don't send credentials for cross-origin requests
-      body: JSON.stringify(dataToSend)
-    });
-
-    if (!response.ok) {
-      let errorText = `HTTP error! Status: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorText = errorData.detail || errorText;
-      } catch (e) {
-        // If JSON parsing fails, use the status text
-        errorText = `Error ${response.status}: ${response.statusText}`;
-      }
-      throw new Error(errorText);
-    }
-
-    const fetchedData = await response.json();
-    finalData.value = fetchedData;
+    const { data: fetchedData } = await tryPredictAcrossCandidates(dataToSend)
+    finalData.value = fetchedData
     await nextTick();
     drawArcuates();
   } catch (error) {
     const rawMessage = error?.message || 'Error calculating arcuates. Please try again.'
     if (rawMessage.toLowerCase().includes('failed to fetch')) {
-      errorMessage.value = `Unable to reach prediction API (${getApiUrl() || 'not configured'}). Verify VITE_API_URL, backend availability, HTTPS, and CORS/host allowlist settings.`
+      errorMessage.value = `Unable to reach prediction API. Tried: ${API_CANDIDATES.join(', ') || 'not configured'}. Verify VITE_API_URL, backend availability, HTTPS, and CORS/host allowlist settings.`
     } else {
       errorMessage.value = rawMessage
     }
@@ -645,12 +638,6 @@ onMounted(async () => {
   rightImg.src = rightEyeTemplate
   leftImg.src = leftEyeTemplate
   
-  // Check API availability
-  try {
-    await checkApiAvailability();
-  } catch (error) {
-    // API availability check failed silently
-  }
 });
 </script>
 
