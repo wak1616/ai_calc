@@ -8,7 +8,7 @@
           elevation="2"
         >
           <div>This web application is intended for investigational purposes only.</div>
-          <div class="mt-1" style="font-size: 0.85em; opacity: 0.9;">All data entered into this calculator remains local to your browser and is not stored or transmitted.</div>
+          <div class="mt-1" style="font-size: 0.85em; opacity: 0.9;">Patient name/ID/date fields remain in your browser only. De-identified clinical parameters needed for calculation are transmitted to the prediction API and are not intentionally stored by this app.</div>
         </v-alert>
         
         <div class="text-h6 font-weight-regular mb-4 text-medium-emphasis pl-4 no-print primary white--text pa-4">
@@ -404,21 +404,49 @@ const ARCUATE_COLORS = {
   second: '#FFA500'  // Orange
 }
 
-// Use environment variable for API connection with fallback
-const API_URL = ref(import.meta.env.VITE_API_URL || 'http://localhost:8000');
+const normalizeApiUrl = (url) => {
+  if (!url) return ''
+  const trimmed = url.trim().replace(/\/$/, '')
+
+  // Avoid mixed-content failures when frontend runs on HTTPS.
+  if (window.location.protocol === 'https:' && trimmed.startsWith('http://')) {
+    return `https://${trimmed.slice('http://'.length)}`
+  }
+
+  return trimmed
+}
+
+const configuredApiUrl = normalizeApiUrl(import.meta.env.VITE_API_URL || '')
+const localDefaultApiUrl = 'http://localhost:8000'
+const sameOriginApiUrl = normalizeApiUrl(window.location.origin)
+
+// Preferred order: explicitly configured URL, same-origin fallback, localhost for dev.
+const API_CANDIDATES = [
+  configuredApiUrl,
+  sameOriginApiUrl,
+  localDefaultApiUrl
+].filter((url, index, arr) => url && arr.indexOf(url) === index)
+
+const getApiUrl = () => API_CANDIDATES[0] || ''
 
 // Function to check if API is available (for user feedback)
 const checkApiAvailability = async () => {
-  try {
-    const response = await fetch(`${API_URL.value}/docs`, { 
-      method: 'HEAD',
-      mode: 'no-cors' // Just to check if server responds
-    });
-    return true;
-  } catch (error) {
-    return false;
+  for (const baseUrl of API_CANDIDATES) {
+    try {
+      const response = await fetch(`${baseUrl}/healthz`, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' },
+        credentials: 'omit'
+      })
+
+      if (response.ok) return { ok: true, baseUrl }
+    } catch (error) {
+      // try next candidate
+    }
   }
-};
+
+  return { ok: false, baseUrl: getApiUrl() }
+}
 
 const rules = {
   required: value => !!value || 'Required field',
@@ -546,12 +574,8 @@ const handleSubmit = async () => {
     isLoading.value = true;
     errorMessage.value = '';
     
-    // Check API availability
-    const apiAvailable = await checkApiAvailability();
-    if (!apiAvailable) {
-      throw new Error('API not available. Please try again later.');
-    }
-    
+    // Resolve the best API target (configured URL first, then fallbacks).
+
     // Prepare data with correct types
     // HIPAA: Only send de-identified clinical parameters needed for prediction.
     // Patient Name, ID, and DOS remain client-side only.
@@ -565,7 +589,14 @@ const handleSubmit = async () => {
       LASIK: formData.LASIK
     };
     
-    const response = await fetch(`${API_URL.value}/predict`, {
+    const availability = await checkApiAvailability()
+    const activeApiBase = availability.baseUrl || getApiUrl()
+
+    if (!activeApiBase) {
+      throw new Error('Prediction API URL is not configured. Set VITE_API_URL in your frontend deployment settings.')
+    }
+
+    const response = await fetch(`${activeApiBase}/predict`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -592,7 +623,12 @@ const handleSubmit = async () => {
     await nextTick();
     drawArcuates();
   } catch (error) {
-    errorMessage.value = error.message || 'Error calculating arcuates. Please try again.';
+    const rawMessage = error?.message || 'Error calculating arcuates. Please try again.'
+    if (rawMessage.toLowerCase().includes('failed to fetch')) {
+      errorMessage.value = `Unable to reach prediction API (${getApiUrl() || 'not configured'}). Verify VITE_API_URL, backend availability, HTTPS, and CORS/host allowlist settings.`
+    } else {
+      errorMessage.value = rawMessage
+    }
     finalData.value = null; // Clear any previous results
   } finally {
     // Hide loading state when done (success or error)
