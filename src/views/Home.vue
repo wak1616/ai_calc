@@ -404,22 +404,67 @@ const ARCUATE_COLORS = {
   second: '#FFA500'  // Orange
 }
 
-// Use environment variable for API connection with fallback
-const API_URL = ref(import.meta.env.VITE_API_URL || 'http://localhost:8000');
+const normalizeApiUrl = (url) => {
+  if (!url) return ''
+  const trimmed = url.trim().replace(/\/$/, '')
 
-// Function to check if API is available (for user feedback)
-const checkApiAvailability = async () => {
-  try {
-    const response = await fetch(`${API_URL.value}/healthz`, {
-      method: 'GET',
-      headers: { 'Accept': 'application/json' },
-      credentials: 'omit'
-    });
-    return response.ok;
-  } catch (error) {
-    return false;
+  // Avoid mixed-content failures when frontend runs on HTTPS.
+  if (window.location.protocol === 'https:' && trimmed.startsWith('http://')) {
+    return `https://${trimmed.slice('http://'.length)}`
   }
-};
+
+  return trimmed
+}
+
+const configuredApiUrl = normalizeApiUrl(import.meta.env.VITE_API_URL || '')
+const localDefaultApiUrl = 'http://localhost:8000'
+const sameOriginApiUrl = normalizeApiUrl(window.location.origin)
+
+// Preferred order: explicitly configured URL, same-origin fallback, localhost for dev.
+const API_CANDIDATES = [
+  configuredApiUrl,
+  sameOriginApiUrl,
+  localDefaultApiUrl
+].filter((url, index, arr) => url && arr.indexOf(url) === index)
+
+const getApiUrl = () => API_CANDIDATES[0] || ''
+
+const tryPredictAcrossCandidates = async (payload) => {
+  let lastError = null
+
+  for (const baseUrl of API_CANDIDATES) {
+    try {
+      const response = await fetch(`${baseUrl}/predict`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'omit',
+        body: JSON.stringify(payload)
+      })
+
+      if (!response.ok) {
+        let errorText = `HTTP error! Status: ${response.status}`
+        try {
+          const errorData = await response.json()
+          errorText = errorData.detail || errorText
+        } catch (e) {
+          errorText = `Error ${response.status}: ${response.statusText}`
+        }
+        throw new Error(errorText)
+      }
+
+      const data = await response.json()
+      return { data, baseUrl }
+    } catch (error) {
+      lastError = error
+      // continue trying next candidate
+    }
+  }
+
+  throw lastError || new Error('Unable to reach prediction API')
+}
 
 const rules = {
   required: value => !!value || 'Required field',
@@ -547,10 +592,8 @@ const handleSubmit = async () => {
     isLoading.value = true;
     errorMessage.value = '';
     
-    // Lightweight health check (non-blocking).
-    // We still attempt /predict even if this fails, to avoid false negatives from network/CORS edge cases.
-    await checkApiAvailability();
-    
+    // Resolve the best API target (configured URL first, then fallbacks).
+
     // Prepare data with correct types
     // HIPAA: Only send de-identified clinical parameters needed for prediction.
     // Patient Name, ID, and DOS remain client-side only.
@@ -564,36 +607,18 @@ const handleSubmit = async () => {
       LASIK: formData.LASIK
     };
     
-    const response = await fetch(`${API_URL.value}/predict`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      credentials: 'omit', // Don't send credentials for cross-origin requests
-      body: JSON.stringify(dataToSend)
-    });
-
-    if (!response.ok) {
-      let errorText = `HTTP error! Status: ${response.status}`;
-      try {
-        const errorData = await response.json();
-        errorText = errorData.detail || errorText;
-      } catch (e) {
-        // If JSON parsing fails, use the status text
-        errorText = `Error ${response.status}: ${response.statusText}`;
-      }
-      throw new Error(errorText);
+    if (API_CANDIDATES.length === 0) {
+      throw new Error('Prediction API URL is not configured. Set VITE_API_URL in your frontend deployment settings.')
     }
 
-    const fetchedData = await response.json();
-    finalData.value = fetchedData;
+    const { data: fetchedData } = await tryPredictAcrossCandidates(dataToSend)
+    finalData.value = fetchedData
     await nextTick();
     drawArcuates();
   } catch (error) {
     const rawMessage = error?.message || 'Error calculating arcuates. Please try again.'
     if (rawMessage.toLowerCase().includes('failed to fetch')) {
-      errorMessage.value = 'Unable to reach prediction API. Please verify VITE_API_URL, backend availability, and CORS/host allowlist settings.'
+      errorMessage.value = `Unable to reach prediction API. Tried: ${API_CANDIDATES.join(', ') || 'not configured'}. Verify VITE_API_URL, backend availability, HTTPS, and CORS/host allowlist settings.`
     } else {
       errorMessage.value = rawMessage
     }
@@ -613,12 +638,6 @@ onMounted(async () => {
   rightImg.src = rightEyeTemplate
   leftImg.src = leftEyeTemplate
   
-  // Check API availability
-  try {
-    await checkApiAvailability();
-  } catch (error) {
-    // API availability check failed silently
-  }
 });
 </script>
 
