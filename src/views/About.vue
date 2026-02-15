@@ -72,7 +72,7 @@ const assumptions = [
   'AKs are made at 80% depth.',
   'AKs are made at 4.5mm radius from the visual center.',
   'All AKs were opened and irrigated at the time of surgery with a BSS cannula for consistency and maximal effect, and WE RECOMMEND OPENING ALL AKs WITH USE OF THIS CALCULATOR.<sup>1</sup>',
-  'Maximum AK sweep have been capped at 50 degrees. Based on our analysis, we believe that higher levels of astigmatism should be treated with toric lenses over laser AKs (>= 0.60 ATR or >= 1.1 WTR)',
+  'Maximum AK sweep have been capped at 50 degrees. Large arcuate incisions may not be the best option to correct higher levels of corneal astigmatism (>= 0.60 ATR or >= 1.1 WTR), and this calculator has not been validated for these higher levels. Consider using a toric IOL instead.',
   'The nomogram assumes a clear corneal temporal incision with a 2.4-2.8mm blade which can be assumed to create ~0.2 D of SIA at 180 deg. An "average" SIA has been captured by the weights during the machine learning process. Inputting a presumed SIA for an individual surgeon has not been shown to significantly improve results.',
   'The model treats low levels of anterior ATR astigmatism aggressively in order to mitigate the effects of posterior corneal astigmatism and known regression of treatment effect at these axes.',
   'The current iteration of this model has been trained using K readings and other measurements from the IOLMaster 700 (Zeiss Meditec).'

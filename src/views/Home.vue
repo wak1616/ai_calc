@@ -201,7 +201,7 @@
                 style="white-space: normal; line-height: 1.5;"
               >
                 <div class="text-body-1">
-                  Large arcuate incisions are NOT the best option to correct higher levels of corneal astigmatism (defined as >= 0.6 ATR or >= 1.1 WTR). This model recommends using a TORIC IOL instead.
+                  Large arcuate incisions may NOT be the best option to correct higher levels of corneal astigmatism (defined as >= 0.6 ATR or >= 1.1 WTR), and this calculator has not been validated for these higher levels. Consider using a TORIC IOL instead.
                 </div>
               </v-alert>
             </v-fade-transition>
@@ -338,7 +338,7 @@
                     class="toric-print-alert"
                   >
                     <div class="text-body-1">
-                      Large arcuate incisions are NOT the best option to correct higher levels of corneal astigmatism (defined as >= 0.6 ATR or >= 1.1 WTR). This model recommends using a TORIC IOL instead.
+                      Large arcuate incisions may NOT be the best option to correct higher levels of corneal astigmatism (defined as >= 0.6 ATR or >= 1.1 WTR), and this calculator has not been validated for these higher levels. Consider using a TORIC IOL instead.
                     </div>
                   </v-alert>
                 </div>

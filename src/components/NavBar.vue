@@ -69,10 +69,22 @@
           </v-list-item>
           <v-divider />
           <v-list-item
+            href="https://derojas.ai"
+            target="_blank"
+          >
+            <v-list-item-title>DeRojas.ai Homepage</v-list-item-title>
+          </v-list-item>
+          <v-list-item
             href="https://www.linkedin.com/in/joaquin-de-rojas-598830268/"
             target="_blank"
           >
             <v-list-item-title>About the creator (LinkedIn page)</v-list-item-title>
+          </v-list-item>
+          <v-divider />
+          <v-list-item
+            href="mailto:derojas.assistant@gmail.com?subject=AI%20Calc%20Support"
+          >
+            <v-list-item-title>Contact Support (please do not include PHI)</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -132,11 +144,25 @@
               </v-list-item>
               <v-divider />
               <v-list-item
+                href="https://derojas.ai"
+                target="_blank"
+                @click="drawer = false"
+              >
+                <v-list-item-title>DeRojas.ai Homepage</v-list-item-title>
+              </v-list-item>
+              <v-list-item
                 href="https://www.linkedin.com/in/joaquin-de-rojas-598830268/"
                 target="_blank"
                 @click="drawer = false"
               >
                 <v-list-item-title>About the creator (LinkedIn page)</v-list-item-title>
+              </v-list-item>
+              <v-divider />
+              <v-list-item
+                href="mailto:derojas.assistant@gmail.com?subject=AI%20Calc%20Support"
+                @click="drawer = false"
+              >
+                <v-list-item-title>Contact Support (please do not include PHI)</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
