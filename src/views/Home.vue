@@ -8,7 +8,7 @@
           elevation="2"
         >
           <div>This web application is intended for investigational purposes only.</div>
-          <div class="mt-1" style="font-size: 0.85em; opacity: 0.9;">All data entered into this calculator remains local to your browser and is not stored or transmitted.</div>
+          <div class="mt-1" style="font-size: 0.85em; opacity: 0.9;">Patient name/ID/date fields remain in your browser only. De-identified clinical parameters needed for calculation are transmitted to the prediction API and are not intentionally stored by this app.</div>
         </v-alert>
         
         <div class="text-h6 font-weight-regular mb-4 text-medium-emphasis pl-4 no-print primary white--text pa-4">
@@ -410,11 +410,12 @@ const API_URL = ref(import.meta.env.VITE_API_URL || 'http://localhost:8000');
 // Function to check if API is available (for user feedback)
 const checkApiAvailability = async () => {
   try {
-    const response = await fetch(`${API_URL.value}/docs`, { 
-      method: 'HEAD',
-      mode: 'no-cors' // Just to check if server responds
+    const response = await fetch(`${API_URL.value}/healthz`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      credentials: 'omit'
     });
-    return true;
+    return response.ok;
   } catch (error) {
     return false;
   }
@@ -546,11 +547,9 @@ const handleSubmit = async () => {
     isLoading.value = true;
     errorMessage.value = '';
     
-    // Check API availability
-    const apiAvailable = await checkApiAvailability();
-    if (!apiAvailable) {
-      throw new Error('API not available. Please try again later.');
-    }
+    // Lightweight health check (non-blocking).
+    // We still attempt /predict even if this fails, to avoid false negatives from network/CORS edge cases.
+    await checkApiAvailability();
     
     // Prepare data with correct types
     // HIPAA: Only send de-identified clinical parameters needed for prediction.
@@ -592,7 +591,12 @@ const handleSubmit = async () => {
     await nextTick();
     drawArcuates();
   } catch (error) {
-    errorMessage.value = error.message || 'Error calculating arcuates. Please try again.';
+    const rawMessage = error?.message || 'Error calculating arcuates. Please try again.'
+    if (rawMessage.toLowerCase().includes('failed to fetch')) {
+      errorMessage.value = 'Unable to reach prediction API. Please verify VITE_API_URL, backend availability, and CORS/host allowlist settings.'
+    } else {
+      errorMessage.value = rawMessage
+    }
     finalData.value = null; // Clear any previous results
   } finally {
     // Hide loading state when done (success or error)
