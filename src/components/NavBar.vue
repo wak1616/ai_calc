@@ -75,7 +75,8 @@
             <v-list-item-title>DeRojas.ai Homepage</v-list-item-title>
           </v-list-item>
           <v-list-item
-            href="mailto:derojas.assistant@gmail.com?subject=AI%20Calc%20Support"
+            href="https://mail.google.com/mail/?view=cm&to=derojas.assistant@gmail.com&su=AI%20Calc%20Support"
+            target="_blank"
           >
             <v-list-item-title>Contact Support (please do not include PHI)</v-list-item-title>
           </v-list-item>
@@ -144,7 +145,8 @@
                 <v-list-item-title>DeRojas.ai Homepage</v-list-item-title>
               </v-list-item>
               <v-list-item
-                href="mailto:derojas.assistant@gmail.com?subject=AI%20Calc%20Support"
+                href="https://mail.google.com/mail/?view=cm&to=derojas.assistant@gmail.com&su=AI%20Calc%20Support"
+                target="_blank"
                 @click="drawer = false"
               >
                 <v-list-item-title>Contact Support (please do not include PHI)</v-list-item-title>
