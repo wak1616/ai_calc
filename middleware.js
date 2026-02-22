@@ -81,8 +81,21 @@ export default function middleware(request) {
     <p>
       <a href="${newUrl}">Go to aicalc.derojas.ai &rarr;</a>
     </p>
-    <p class="redirect-note">You will be redirected automatically in 10 seconds.</p>
+    <p class="redirect-note">You will be redirected automatically in <span id="countdown">10</span> seconds.</p>
   </div>
+  <script>
+    var seconds = 10;
+    var target = "${newUrl}";
+    var el = document.getElementById("countdown");
+    var timer = setInterval(function() {
+      seconds--;
+      if (el) el.textContent = seconds;
+      if (seconds <= 0) {
+        clearInterval(timer);
+        window.location.href = target;
+      }
+    }, 1000);
+  </script>
 </body>
 </html>`;
 
