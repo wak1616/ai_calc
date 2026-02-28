@@ -16,7 +16,7 @@ const selectedModel = ref('XGBoost')
         <!-- Copyright Footer -->
         <v-row justify="center" class="no-print">
           <v-col cols="12" class="text-center text-caption text-medium-emphasis">
-            © {{ new Date().getFullYear() }} Joaquin De Rojas Consulting LLC. All rights reserved.
+            © {{ new Date().getFullYear() }} <a href="https://derojas.ai" target="_blank" class="text-medium-emphasis">derojas.ai</a>. All rights reserved.
           </v-col>
         </v-row>
       </v-container>

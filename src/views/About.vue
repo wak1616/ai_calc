@@ -45,15 +45,15 @@
         </v-alert>
 
         <div class="text-h5 font-weight-medium mb-3 mt-5">Contact</div>
-        <div class="text-body-1 d-flex align-center mb-6">
-          Please feel free to email the author with any questions or concerns:
+        <div class="text-body-1 mb-6">
+          Feel free to email with any questions or concerns:
           <v-btn
-            href="mailto:joaquin.derojas@gmail.com"
+            href="mailto:iris@derojas.ai"
             variant="text"
             class="text-primary pa-0 text-decoration-underline text-none ms-1"
             style="height: auto;"
           >
-          joaquin.derojas@gmail.com
+          iris@derojas.ai
           </v-btn>
         </div>
 

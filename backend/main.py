@@ -83,6 +83,7 @@ async def enforce_request_size_and_security_headers(request: Request, call_next)
 
 
 @app.get("/healthz")
+@app.get("/health")
 async def healthz():
     return {"status": "ok"}
 
@@ -249,4 +250,5 @@ async def predict(data: PatientData):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8080))
+    uvicorn.run(app, host="0.0.0.0", port=port)
