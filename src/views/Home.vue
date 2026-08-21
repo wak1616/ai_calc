@@ -428,6 +428,24 @@ const API_CANDIDATES = configuredApiUrl
     ? [sameOriginApiUrl, localDefaultApiUrl].filter((url, index, arr) => url && arr.indexOf(url) === index)
     : [sameOriginApiUrl].filter((url, index, arr) => url && arr.indexOf(url) === index)
 
+// Fire-and-forget warm-up: the Cloud Run backend scales to zero and takes ~15s to
+// cold-start (xgboost import + model load at module scope). Pinging /health on mount
+// moves that boot into the window where the user is still entering their values, so
+// the delay is invisible by the time they hit Predict. Never surfaced to the user.
+// NB use /health, not /healthz - the deployed revision only serves /health.
+const warmUpApi = () => {
+  for (const baseUrl of API_CANDIDATES) {
+    fetch(`${baseUrl}/health`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      credentials: 'omit',
+      cache: 'no-store'
+    }).catch(() => {
+      /* Warm-up is best-effort; a failure here must never affect the UI. */
+    })
+  }
+}
+
 const tryPredictAcrossCandidates = async (payload) => {
   let lastError = null
 
@@ -638,7 +656,9 @@ onMounted(async () => {
   
   rightImg.src = rightEyeTemplate
   leftImg.src = leftEyeTemplate
-  
+
+  // Wake the prediction backend now so it is warm when the user submits.
+  warmUpApi()
 });
 </script>
 
